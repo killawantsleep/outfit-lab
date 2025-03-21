@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог товаров</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .item h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+        .item p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .item .price {
+            font-size: 16px;
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Каталог товаров</h1>
+    <div id="catalog"></div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+
+        // Функция для загрузки каталога
+        async function loadCatalog() {
+            const response = await fetch('https://your-api-url.com/catalog');
+            const items = await response.json();
+
+            const catalog = document.getElementById('catalog');
+            items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <p>${item.description}</p>
+                    <p class="price">Цена: ${item.price} руб.</p>
+                `;
+                catalog.appendChild(itemDiv);
+            });
+        }
+
+        // Загружаем каталог при запуске
+        loadCatalog();
+    </script>
+</body>
+</html>
