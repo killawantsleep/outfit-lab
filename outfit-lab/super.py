@@ -3,10 +3,10 @@ from telethon import TelegramClient, events
 import asyncio
 
 # Ваши данные из Telegram API
-api_id = 'ВАШ_API_ID'  # Получите на https://my.telegram.org
-api_hash = 'ВАШ_API_HASH'  # Получите на https://my.telegram.org
-bot_token = 'ВАШ_ТОКЕН_БОТА'  # Токен от @BotFather
-channel_id = ID_ВАШЕГО_КАНАЛА  # Замените на ID вашего канала
+api_id = '22658994'  # Получите на https://my.telegram.org
+api_hash = '02311226e535f97914bd936c7612ad4e'  # Получите на https://my.telegram.org
+bot_token = '7717029640:AAEeBFBzeAPPGco2cxTBQAIhZXXq7aWuanM'  # Токен от @BotFather
+channel_id = '@proverka2362'  # Замените на ID вашего канала
 
 # Установите кнопку "Открыть каталог"
 async def set_menu_button():
