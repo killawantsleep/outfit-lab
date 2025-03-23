@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danisa Shop Bot</title>
+    <title>Outfit Lab</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,7 +32,7 @@
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            margin: 0 5px; /* Уменьшил отступ между кнопкой и полем поиска */
+            margin: 0 5px;
         }
         .search-container .symbol {
             font-size: 24px;
@@ -40,8 +40,6 @@
             padding: 10px;
             cursor: pointer;
             color: #000;
-            background-color: transparent; /* Убедимся, что фон прозрачный */
-            border: none; /* Убираем границу, если она есть */
         }
         /* Меню с категориями (слева) */
         .menu {
@@ -69,6 +67,46 @@
         }
         .menu ul li:hover {
             background-color: #e0e0e0;
+        }
+        /* Меню с фильтрами (сверху) */
+        .dropdown-menu {
+            position: fixed;
+            top: -100%; /* Меню начинается за пределами экрана */
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: top 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .dropdown-menu.open {
+            top: 0; /* Меню появляется сверху */
+        }
+        .dropdown-menu ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .dropdown-menu ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .dropdown-menu ul li:hover {
+            background-color: #e0e0e0;
+        }
+        /* Оверлей для закрытия меню */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
         }
         /* Список товаров */
         .items-container {
@@ -111,6 +149,20 @@
             <li>Сумки</li>
         </ul>
     </div>
+
+    <!-- Меню с фильтрами (сверху) -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <ul>
+            <li>Сортировать по</li>
+            <li>По рейтингу</li>
+            <li>Новинки</li>
+            <li>По возрастанию цены</li>
+            <li>По убыванию цены</li>
+        </ul>
+    </div>
+
+    <!-- Оверлей для закрытия меню -->
+    <div class="overlay" id="overlay"></div>
 
     <!-- Список товаров -->
     <div class="items-container">
