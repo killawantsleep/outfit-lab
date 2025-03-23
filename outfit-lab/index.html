@@ -68,7 +68,7 @@
 
         // Функция для загрузки каталога
         async function loadCatalog() {
-            const response = await fetch('http://127.0.0.1:5000/catalog');  // URL вашего API
+            const response = await fetch('https://killawantsleep.github.io/outfit-lab/');  // URL вашего API
             const items = await response.json();
 
             const catalog = document.getElementById('catalog');
