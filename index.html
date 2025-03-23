@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Outfit Lab</title>
     <style>
+        /* Основные стили */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -12,11 +13,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #e0f7fa; /* Новый цвет фона (светло-синий) */
+            background-color: #f8f8f8;
+            min-height: 100vh; /* Минимальная высота экрана */
         }
+
+        /* Контейнер для поиска */
         .search-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 100%; /* Занимает всю ширину */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -24,8 +28,10 @@
             background-color: #fff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 10px; /* Уменьшил отступ сверху */
         }
+
+        /* Поле поиска */
         .search-container input {
             flex-grow: 1;
             padding: 10px;
@@ -34,13 +40,18 @@
             border-radius: 5px;
             margin: 0 5px;
         }
+
+        /* Кнопки (левая и правая) */
         .search-container .symbol {
             font-size: 24px;
             font-weight: bold;
             padding: 10px;
             cursor: pointer;
             color: #000;
+            background-color: transparent;
+            border: none;
         }
+
         /* Меню с категориями (слева) */
         .menu {
             position: fixed;
@@ -68,6 +79,7 @@
         .menu ul li:hover {
             background-color: #e0e0e0;
         }
+
         /* Меню с фильтрами (сверху) */
         .dropdown-menu {
             position: fixed;
@@ -94,6 +106,7 @@
         .dropdown-menu ul li:hover {
             background-color: #e0e0e0;
         }
+
         /* Оверлей для закрытия меню */
         .overlay {
             display: none;
@@ -108,11 +121,14 @@
         .overlay.active {
             display: block;
         }
+
         /* Список товаров */
         .items-container {
             width: 100%;
-            max-width: 600px;
-            margin-top: 20px;
+            max-width: 100%; /* Занимает всю ширину */
+            margin-top: 10px; /* Уменьшил отступ сверху */
+            padding: 10px;
+            box-sizing: border-box; /* Учитываем padding в ширине */
         }
         .item {
             background-color: #fff;
