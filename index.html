@@ -13,22 +13,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f8f8f8;
-            min-height: 100vh; /* Минимальная высота экрана */
+            background-color: var(--tg-theme-bg-color, #f8f8f8); /* Используем переменные Telegram */
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
+            min-height: 100vh;
         }
 
         /* Контейнер для поиска */
         .search-container {
             width: 100%;
-            max-width: 100%; /* Занимает всю ширину */
+            max-width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background-color: #fff;
+            background-color: var(--tg-theme-secondary-bg-color, #fff); /* Цвет фона в зависимости от темы */
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-radius: 8px;
-            margin-top: 10px; /* Уменьшил отступ сверху */
+            margin-top: 10px;
         }
 
         /* Поле поиска */
@@ -36,9 +37,11 @@
             flex-grow: 1;
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--tg-theme-hint-color, #ccc); /* Цвет границы в зависимости от темы */
             border-radius: 5px;
             margin: 0 5px;
+            background-color: var(--tg-theme-bg-color, #fff); /* Цвет фона в зависимости от темы */
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
         }
 
         /* Кнопки (левая и правая) */
@@ -47,7 +50,7 @@
             font-weight: bold;
             padding: 10px;
             cursor: pointer;
-            color: #000;
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
             background-color: transparent;
             border: none;
         }
@@ -59,7 +62,7 @@
             left: -250px;
             width: 250px;
             height: 100%;
-            background-color: #f8f8f8;
+            background-color: var(--tg-theme-secondary-bg-color, #f8f8f8); /* Цвет фона в зависимости от темы */
             box-shadow: 2px 0 4px rgba(0,0,0,0.1);
             transition: left 0.3s ease;
             padding: 20px;
@@ -75,25 +78,26 @@
         .menu ul li {
             padding: 10px;
             cursor: pointer;
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
         }
         .menu ul li:hover {
-            background-color: #e0e0e0;
+            background-color: var(--tg-theme-hint-color, #e0e0e0); /* Цвет фона при наведении */
         }
 
         /* Меню с фильтрами (сверху) */
         .dropdown-menu {
             position: fixed;
-            top: -100%; /* Меню начинается за пределами экрана */
+            top: -100%;
             left: 0;
             width: 100%;
-            background-color: #fff;
+            background-color: var(--tg-theme-secondary-bg-color, #fff); /* Цвет фона в зависимости от темы */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: top 0.3s ease;
             z-index: 1000;
             padding: 20px;
         }
         .dropdown-menu.open {
-            top: 0; /* Меню появляется сверху */
+            top: 0;
         }
         .dropdown-menu ul {
             list-style-type: none;
@@ -102,9 +106,10 @@
         .dropdown-menu ul li {
             padding: 10px;
             cursor: pointer;
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
         }
         .dropdown-menu ul li:hover {
-            background-color: #e0e0e0;
+            background-color: var(--tg-theme-hint-color, #e0e0e0); /* Цвет фона при наведении */
         }
 
         /* Оверлей для закрытия меню */
@@ -125,13 +130,13 @@
         /* Список товаров */
         .items-container {
             width: 100%;
-            max-width: 100%; /* Занимает всю ширину */
-            margin-top: 10px; /* Уменьшил отступ сверху */
+            max-width: 100%;
+            margin-top: 10px;
             padding: 10px;
-            box-sizing: border-box; /* Учитываем padding в ширине */
+            box-sizing: border-box;
         }
         .item {
-            background-color: #fff;
+            background-color: var(--tg-theme-secondary-bg-color, #fff); /* Цвет фона в зависимости от темы */
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 8px;
@@ -140,10 +145,11 @@
         .item h3 {
             margin: 0;
             font-size: 18px;
+            color: var(--tg-theme-text-color, #000); /* Цвет текста в зависимости от темы */
         }
         .item p {
             margin: 5px 0;
-            color: #555;
+            color: var(--tg-theme-hint-color, #555); /* Цвет текста в зависимости от темы */
         }
     </style>
 </head>
@@ -193,6 +199,17 @@
     </div>
 
     <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+
+        // Показываем кнопку "Закрыть" в Telegram Web App
+        tg.MainButton.show();
+        tg.MainButton.setText("Закрыть");
+        tg.MainButton.onClick(() => {
+            tg.close();
+        });
+
+        // Обработчики для кнопок
         const menuButton = document.getElementById('menuButton');
         const filterButton = document.getElementById('filterButton');
         const menu = document.getElementById('menu');
