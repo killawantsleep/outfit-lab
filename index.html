@@ -1,70 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OUTFIT LAB BOT</title>
+    <title>Danisa Shop Bot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f9f9f9;
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            background-color: #f8f8f8;
         }
         .search-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
             width: 100%;
             max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            margin-top: 20px;
         }
-        .search-bar {
-            flex: 1;
-        }
-        .search-bar input {
-            width: 100%;
+        .search-container input {
+            flex-grow: 1;
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 0 10px;
         }
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: 1px solid #007bff;
-            border-radius: 8px;
-            background-color: #007bff;
-            color: white;
+        .search-container .symbol {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px;
             cursor: pointer;
-            text-align: center;
+            color: #000;
         }
-        .button:hover {
-            background-color: #0056b3;
+        /* Меню с категориями (слева) */
+        .menu {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #f8f8f8;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            padding: 20px;
+            z-index: 1000;
+        }
+        .menu.open {
+            left: 0;
+        }
+        .menu ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .menu ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .menu ul li:hover {
+            background-color: #e0e0e0;
+        }
+        /* Меню с фильтрами (сверху) */
+        .dropdown-menu {
+            position: fixed;
+            top: -100%; /* Меню начинается за пределами экрана */
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: top 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .dropdown-menu.open {
+            top: 0; /* Меню появляется сверху */
+        }
+        .dropdown-menu ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .dropdown-menu ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .dropdown-menu ul li:hover {
+            background-color: #e0e0e0;
+        }
+        /* Оверлей для закрытия меню */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .overlay.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="search-container">
-        <button class="button" onclick="leftButtonClick()">Левая кнопка</button>
-        <div class="search-bar">
-            <input type="text" placeholder="Я ищу...">
-        </div>
-        <button class="button" onclick="rightButtonClick()">Правая кнопка</button>
+        <div class="symbol" id="menuButton">=</div> <!-- Левая кнопка -->
+        <input type="text" placeholder="Я ищу...">
+        <div class="symbol" id="filterButton">|</div> <!-- Правая кнопка -->
     </div>
 
-    <script>
-        function leftButtonClick() {
-            alert('Левая кнопка нажата');
-        }
+    <!-- Меню с категориями (слева) -->
+    <div class="menu" id="menu">
+        <ul>
+            <li>Обувь</li>
+            <li>Футболки</li>
+            <li>Верхняя одежда</li>
+            <li>Аксессуары</li>
+            <li>Штаны | Шорты</li>
+            <li>Сумки</li>
+        </ul>
+    </div>
 
-        function rightButtonClick() {
-            alert('Правая кнопка нажата');
-        }
+    <!-- Меню с фильтрами (сверху) -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <ul>
+            <li>Сортировать по</li>
+            <li>По рейтингу</li>
+            <li>Новинки</li>
+            <li>По возрастанию цены</li>
+            <li>По убыванию цены</li>
+        </ul>
+    </div>
+
+    <!-- Оверлей для закрытия меню -->
+    <div class="overlay" id="overlay"></div>
+
+    <script>
+        const menuButton = document.getElementById('menuButton');
+        const filterButton = document.getElementById('filterButton');
+        const menu = document.getElementById('menu');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const overlay = document.getElementById('overlay');
+
+        // Обработчик клика по левой кнопке (меню с категориями)
+        menuButton.addEventListener('click', () => {
+            menu.classList.toggle('open');
+            dropdownMenu.classList.remove('open'); // Закрываем другое меню
+            overlay.classList.toggle('active');
+        });
+
+        // Обработчик клика по правой кнопке (меню с фильтрами)
+        filterButton.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('open');
+            menu.classList.remove('open'); // Закрываем другое меню
+            overlay.classList.toggle('active');
+        });
+
+        // Обработчик клика по оверлею (закрытие всех меню)
+        overlay.addEventListener('click', () => {
+            menu.classList.remove('open');
+            dropdownMenu.classList.remove('open');
+            overlay.classList.remove('active');
+        });
     </script>
 </body>
 </html>
