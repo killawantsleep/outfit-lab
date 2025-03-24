@@ -2,15 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>OUTFIT LAB | Premium Fashion</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="app-wrapper">
-    <!-- Шапка -->
     <header class="main-header">
       <div class="logo-container">
         <h1 class="logo-text">OUTFIT LAB</h1>
@@ -18,18 +21,15 @@
       </div>
     </header>
 
-    <!-- Основной контент -->
     <main class="content-area">
       <div id="itemsContainer" class="items-grid"></div>
     </main>
 
-    <!-- Большая кнопка корзины снизу -->
     <button id="cartBtn" class="cart-btn">
       <span class="cart-icon">🛍️ Корзина</span>
       <span id="cartCounter" class="cart-counter">0</span>
     </button>
 
-    <!-- Модальное окно корзины -->
     <div id="cartModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -49,5 +49,14 @@
   </div>
 
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('ServiceWorker registered'))
+          .catch(err => console.log('ServiceWorker error:', err));
+      });
+    }
+  </script>
 </body>
 </html>
