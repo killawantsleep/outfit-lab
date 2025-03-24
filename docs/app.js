@@ -1,90 +1,91 @@
-// Инициализация Telegram WebApp
+// 1. Инициализация Telegram
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.MainButton.setText("🛍️ Корзина").show();
 
-// Конфигурация
-const API_URL = 'GOOGLE_SCRIPT_URL';
-const CACHE_KEY = 'cachedItems';
-const REFRESH_INTERVAL = 30000; // 30 секунд
+// 2. Конфигурация
+const API_URL = 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec';
+let isFirstLoad = true;
 
-// Загрузка товаров с автоматическим обновлением
+// 3. Загрузка товаров с приоритетом свежих данных
 async function loadItems() {
   try {
-    // 1. Пробуем загрузить из кеша
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    if (cachedData) {
-      renderItems(JSON.parse(cachedData));
+    // 3.1. Показываем старые данные сразу (если есть)
+    const cached = localStorage.getItem('items');
+    if (cached && isFirstLoad) {
+      renderItems(JSON.parse(cached));
     }
 
-    // 2. Загружаем свежие данные с уникальным параметром для избежания кеширования
-    const response = await fetch(`${API_URL}?t=${Date.now()}`);
-    const data = await response.json();
+    // 3.2. Загружаем свежие данные (с уникальным параметром против кеша)
+    const response = await fetch(`${API_URL}?nocache=${Date.now()}`);
+    const freshData = await response.json();
 
-    if (!Array.isArray(data)) {
-      throw new Error("Некорректный формат данных");
+    // 3.3. Проверяем структуру данных
+    if (!Array.isArray(freshData)) {
+      throw new Error('Данные не в формате массива');
     }
 
-    // 3. Обновляем кеш и интерфейс
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    renderItems(data);
+    // 3.4. Обновляем интерфейс и кеш
+    renderItems(freshData);
+    localStorage.setItem('items', JSON.stringify(freshData));
 
   } catch (error) {
-    console.error("Ошибка загрузки:", error);
-    
-    // Фолбэк: показываем пример, если нет кеша
-    if (!localStorage.getItem(CACHE_KEY)) {
+    console.error('Ошибка:', error);
+    // Показываем кеш даже при ошибке сети
+    if (!localStorage.getItem('items')) {
       renderItems([{
-        name: "Пример товара",
-        price: 9999,
+        name: "Попробуйте обновить страницу",
+        price: 0,
         image: "https://via.placeholder.com/300",
-        size: "M"
+        size: "XL"
       }]);
     }
+  } finally {
+    isFirstLoad = false;
   }
 }
 
-// Оптимизированный рендер товаров
+// 4. Улучшенный рендеринг товаров
 function renderItems(items) {
   const container = document.getElementById('itemsContainer');
   if (!container) return;
 
-  container.innerHTML = items.map(item => `
+  // Сортируем по дате добавления (новые сверху)
+  const sortedItems = [...items].reverse();
+  
+  container.innerHTML = sortedItems.map(item => `
     <div class="item">
-      <img src="${item.image}" 
+      <img src="${item.image || 'https://via.placeholder.com/300'}" 
            class="item-image" 
-           loading="lazy"
-           alt="${item.name}">
-      <h3>${item.name}</h3>
-      <p>${parseInt(item.price).toLocaleString('ru-RU')} ₽</p>
-      <p>Размер: ${item.size || 'не указан'}</p>
-      <button class="buy-button" 
-              onclick="handleBuy('${item.name.replace(/'/g, "\\'")}')">
+           alt="${item.name}"
+           loading="lazy">
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <p class="price">${parseInt(item.price).toLocaleString('ru-RU')} ₽</p>
+        <p class="size">Размер: ${item.size || 'не указан'}</p>
+      </div>
+      <button class="buy-button" onclick="handleBuy('${item.name.replace(/'/g, "\\'")}')">
         В корзину
       </button>
     </div>
   `).join('');
 }
 
-// Обработка покупки
+// 5. Обработка покупки
 function handleBuy(itemName) {
-  try {
-    tg.showAlert(`Добавлено: ${itemName}`);
-    tg.MainButton.show();
-  } catch (e) {
-    console.error("Ошибка Telegram API:", e);
-    alert(`Добавлено: ${itemName}`);
-  }
+  tg.showAlert(`✅ Добавлено: ${itemName}`);
+  tg.MainButton.show();
 }
 
-// Инициализация
+// 6. Запуск и автообновление
 document.addEventListener('DOMContentLoaded', () => {
   loadItems();
-  setInterval(loadItems, REFRESH_INTERVAL);
+  // Обновляем каждые 15 секунд
+  setInterval(loadItems, 15000);
 });
 
-// Для обновления по команде из бота
+// 7. Ручное обновление по команде из бота
 window.forceUpdate = () => {
-  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem('items');
   loadItems();
 };
