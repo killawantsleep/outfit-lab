@@ -1,46 +1,55 @@
-from telegram import Bot, MenuButtonWebApp, WebAppInfo
-from telethon import TelegramClient, events
-import asyncio
+import os
+import telebot
+import requests
+from dotenv import load_dotenv
 
-# Ваши данные из Telegram API
-api_id = '22658994'  # Получите на https://my.telegram.org
-api_hash = '02311226e535f97914bd936c7612ad4e'  # Получите на https://my.telegram.org
-bot_token = '7717029640:AAEeBFBzeAPPGco2cxTBQAIhZXXq7aWuanM'  # Токен от @BotFather
-channel_id = '@proverka2362'  # Замените на ID вашего канала
+load_dotenv()
+bot = telebot.TeleBot(os.getenv("7717029640:AAEeBFBzeAPPGco2cxTBQAIhZXXq7aWuanM"))
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec"
 
-# Установите кнопку "Открыть каталог"
-async def set_menu_button():
-    bot = Bot(token=bot_token)
-    await bot.set_chat_menu_button(
-        menu_button=MenuButtonWebApp(
-            text="Открыть каталог",
-            web_app=WebAppInfo(url="https://killawantsleep.github.io/outfit-lab/")  # Укажите URL вашего веб-приложения
-        )
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, "📲 Отправьте товары через /additem")
+
+@bot.message_handler(commands=['additem'])
+def add_item(message):
+    msg = bot.send_message(
+        message.chat.id,
+        "📤 Отправьте ФОТО + подпись в формате:\n"
+        "Название | Цена | Размер\n"
+        "Пример: Футболка Gucci | 5990 | M"
     )
+    bot.register_next_step_handler(msg, process_item)
 
-# Создаем клиента Telethon
-client = TelegramClient('session_name', api_id, api_hash)
+def process_item(message):
+    try:
+        if not message.photo:
+            raise ValueError("Нужно отправить фото!")
+        
+        name, price, size = message.caption.split('|')
+        file_info = bot.get_file(message.photo[-1].file_id)
+        image_url = f"https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}"
 
-# Функция для обработки новых сообщений
-@client.on(events.NewMessage)
-async def handler(event):
-    # Проверяем, что сообщение из нужного канала
-    if event.chat_id == channel_id:
-        message_text = event.message.text
-        print(f"Новое сообщение: {message_text}")
-        # Здесь можно сохранить сообщение в базу данных
+        # Отправка в Google Sheets
+        response = requests.post(
+            GOOGLE_SCRIPT_URL,
+            json={
+                'action': 'add',
+                'name': name.strip(),
+                'price': price.strip(),
+                'size': size.strip(),
+                'image': image_url
+            }
+        )
 
-# Запуск клиента Telethon и установка кнопки меню
-async def main():
-    # Устанавливаем кнопку меню
-    await set_menu_button()
-    print("Кнопка меню установлена!")
+        if response.status_code == 200:
+            bot.reply_to(message, f"✅ Товар добавлен!\n{name.strip()}")
+        else:
+            bot.reply_to(message, f"⚠️ Ошибка: {response.text}")
 
-    # Запускаем Telethon клиента
-    await client.start(bot_token=bot_token)
-    print("Бот запущен и слушает сообщения...")
-    await client.run_until_disconnected()
+    except Exception as e:
+        bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
-# Запуск
-if __name__ == "__main__":
-    asyncio.run(main())
+if __name__ == '__main__':
+    print("Бот запущен...")
+    bot.polling()

@@ -1,49 +1,42 @@
-// Инициализация Telegram WebApp
+// Инициализация Telegram
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.MainButton.setParams({
-  text: "🛍️ Открыть корзину",
-  color: "#6c5ce7",
-  textColor: "#ffffff"
-}).show();
+tg.MainButton.setText("🛍️ Корзина").show();
 
-// Загрузка товаров с сервера
+// Загрузка товаров из Google Sheets
 async function loadItems() {
   try {
-    const response = await fetch('https://killawantsleep.github.io/outfit-lab/');
-    const items = await response.json();
-    renderItems(items);
+    const response = await fetch('https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec');
+    const data = await response.json();
+    
+    if (!data || !Array.isArray(data)) {
+      throw new Error("Некорректные данные от сервера");
+    }
+
+    renderItems(data);
   } catch (error) {
-    console.error('Ошибка загрузки товаров:', error);
-    // Показываем заглушку, если API не доступно
-    renderItems([
+    console.error("Ошибка загрузки:", error);
+    renderItems([ // Fallback данные
       {
-        id: 1,
-        name: "Футболка BURBERRY 2025",
-        price: 18990,
-        image: "https://ibb.co/TDqyBx0H",
-        badge: "NEW"
-      },
-      {
-        id: 2,
-        name: "КРОССОВки NIKE A.I.",
-        price: 24990,
-        image: "https://ibb.co/example.jpg"
+        name: "Пример товара",
+        price: 9999,
+        image: "https://via.placeholder.com/300",
+        size: "M"
       }
     ]);
   }
 }
 
-// Рендер товаров
+// Отображение товаров
 function renderItems(items) {
   const container = document.getElementById('itemsContainer');
   
   container.innerHTML = items.map(item => `
-    <div class="item" data-id="${item.id}">
-      ${item.badge ? `<span class="item-badge">${item.badge}</span>` : ''}
-      <img src="${item.image}" alt="${item.name}" class="item-image" loading="lazy">
+    <div class="item">
+      <img src="${item.image}" class="item-image" loading="lazy">
       <h3>${item.name}</h3>
-      <p>${item.price.toLocaleString()} ₽</p>
+      <p>${item.price} ₽</p>
+      <p>Размер: ${item.size || 'не указан'}</p>
       <button class="buy-button" onclick="tg.showAlert('Добавлено: ${item.name}')">
         В корзину
       </button>
@@ -51,18 +44,8 @@ function renderItems(items) {
   `).join('');
 }
 
-// Обработчики кнопок
-document.getElementById('menuButton').addEventListener('click', () => {
-  tg.showAlert('Меню категорий будет здесь!');
-});
-
-document.getElementById('filterButton').addEventListener('click', () => {
-  tg.showAlert('Фильтры будут здесь!');
-});
-
-// Запуск при загрузке
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
   loadItems();
-  // Автообновление каждые 5 минут
-  setInterval(loadItems, 300000);
+  setInterval(loadItems, 300000); // Обновление каждые 5 минут
 });

@@ -1,4 +1,4 @@
-/* Современный тёмный дизайн */
+/* Основные стили */
 body {
   font-family: 'Inter', sans-serif;
   background: #0f0f12;
@@ -23,23 +23,7 @@ body {
   margin: 20px 0;
 }
 
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.app-actions button {
-  background: rgba(108, 92, 231, 0.2);
-  border: none;
-  color: white;
-  font-size: 20px;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
+/* Стили карточек товаров */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -51,23 +35,6 @@ body {
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
-  position: relative;
-}
-
-.item:hover {
-  transform: translateY(-5px);
-}
-
-.item-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #e74c3c;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
 }
 
 .item-image {
@@ -75,43 +42,14 @@ body {
   border-radius: 12px;
   aspect-ratio: 1/1;
   object-fit: cover;
-  margin-bottom: 12px;
-}
-
-.item h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-}
-
-.item p {
-  margin: 0 0 12px 0;
-  color: #6c5ce7;
-  font-weight: bold;
 }
 
 .buy-button {
   background: #6c5ce7;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 10px;
   border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
   width: 100%;
-}
-
-.buy-button:hover {
-  background: #5649c0;
-}
-
-/* Для мобильных */
-@media (max-width: 600px) {
-  .items-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .app-header {
-    flex-direction: column;
-    gap: 15px;
-  }
+  cursor: pointer;
 }
