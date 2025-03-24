@@ -1,64 +1,48 @@
 // Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
-tg.expand(); // Раскрываем на весь экран
-tg.MainButton.setText("Закрыть").show();
-tg.MainButton.onClick(() => tg.close());
+tg.expand();
+tg.MainButton.setParams({
+  text: "🛍️ Открыть корзину",
+  color: "#6c5ce7",
+  textColor: "#ffffff"
+}).show();
 
-// Данные товаров (временные, можно заменить на запрос к API)
+// Mock-данные (замените на API)
 const items = [
-    { 
-        name: "Футболка Burberry", 
-        price: 18990,
-        image: "https://example.com/t-shirt.jpg" // Пример ссылки на изображение
-    },
-    { 
-        name: "Джинсы Levi's", 
-        price: 7990,
-        image: "https://example.com/jeans.jpg"
-    }
+  {
+    id: 1,
+    name: "Футболка BURBERRY 2025",
+    price: 18990,
+    image: "https://ibb.co/TDqyBx0H",
+    colors: ["#000000", "#6c5ce7", "#ffffff"]
+  },
+  {
+    id: 2,
+    name: "КРОССОВки NIKE A.I.",
+    price: 24990,
+    image: "https://example.com/sneakers.jpg",
+    badge: "NEW"
+  }
 ];
 
-// Функция отображения товаров
+// Рендер товаров
 function renderItems() {
-    const container = document.getElementById('itemsContainer');
-    container.innerHTML = items.map(item => `
-        <div class="item">
-            <img src="${item.image}" alt="${item.name}" class="item-image">
-            <h3>${item.name}</h3>
-            <p>Цена: ${item.price} руб.</p>
-            <button class="buy-button" onclick="tg.showAlert('Товар ${item.name} добавлен в корзину!')">
-                Купить
-            </button>
-        </div>
-    `).join('');
+  const container = document.getElementById('itemsContainer');
+  
+  container.innerHTML = items.map(item => `
+    <div class="item" data-id="${item.id}">
+      ${item.badge ? `<span class="item-badge">${item.badge}</span>` : ''}
+      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <h3>${item.name}</h3>
+      <p>${item.price.toLocaleString()} ₽</p>
+      <button class="buy-button" onclick="tg.showAlert('Добавлено: ${item.name}')">
+        В корзину
+      </button>
+    </div>
+  `).join('');
 }
 
-// Загрузка товаров при старте
-document.addEventListener('DOMContentLoaded', renderItems);
-
-// Пример работы с API (если подключен бэкенд)
-async function fetchItems() {
-    try {
-        const response = await fetch('https://ваш-api.ru/items');
-        const data = await response.json();
-        items = data; // Обновляем список товаров
-        renderItems();
-    } catch (error) {
-        console.error('Ошибка загрузки товаров:', error);
-    }
-}
-
-// Для отладки в браузере (если не в Telegram)
-if (!window.Telegram) {
-    console.warn('Telegram WebApp не обнаружен. Режим отладки.');
-    renderItems();
-}
-document.getElementById('menuButton').addEventListener('click', () => {
-    const filteredItems = items.filter(item => item.category === 'Футболки');
-    renderItems(filteredItems);
+// Плавная загрузка
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(renderItems, 300); // Имитация загрузки
 });
-const cart = [];
-function addToCart(item) {
-    cart.push(item);
-    tg.MainButton.setText(`Корзина (${cart.length})`).show();
-}

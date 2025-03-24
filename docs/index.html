@@ -1,44 +1,28 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outfit Lab</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outfit Lab | 2025</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="search-container">
-        <button id="menuButton">≡</button>
-        <input type="text" placeholder="Я ищу..." id="searchInput">
+  <div class="app-container">
+    <header class="app-header">
+      <h1>OUTFIT LAB</h1>
+      <div class="app-actions">
+        <button id="menuButton">☰</button>
         <button id="filterButton">⚙️</button>
-    </div>
+      </div>
+    </header>
 
-    <div class="items-container" id="itemsContainer">
-        <!-- Тут появятся товары из API -->
-    </div>
+    <main class="app-main">
+      <div id="itemsContainer" class="items-grid"></div>
+    </main>
+  </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.MainButton.setText("Закрыть").show();
-        tg.MainButton.onClick(() => tg.close());
-
-        // Загрузка товаров
-        async function loadItems() {
-            const response = await fetch('http://ваш-сервер:5000/api/items');
-            const items = await response.json();
-            const container = document.getElementById('itemsContainer');
-            container.innerHTML = items.map(item => `
-                <div class="item">
-                    <h3>${item.name}</h3>
-                    <p>Цена: ${item.price} руб.</p>
-                    <button onclick="tg.showAlert('Товар добавлен!')">Купить</button>
-                </div>
-            `).join('');
-        }
-
-        loadItems();
-    </script>
+  <script src="app.js"></script>
 </body>
 </html>
