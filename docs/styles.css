@@ -1,41 +1,75 @@
-/* Основные стили */
-body {
-  font-family: 'Inter', sans-serif;
-  background: #0f0f12;
-  color: white;
+:root {
+  --primary: #6c5ce7;
+  --primary-dark: #5649c0;
+  --secondary: #00cec9;
+  --dark: #0f0f12;
+  --darker: #1e1e24;
+  --light: #f8f9fa;
+  --danger: #ff4757;
+  --success: #00b894;
+}
+
+/* Базовые стили */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-.app-container {
+body {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--dark);
+  color: var(--light);
+  line-height: 1.6;
+}
+
+.app-wrapper {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 80px; /* Чтобы кнопка корзины не перекрывала контент */
+  padding-bottom: 100px; /* Для кнопки корзины */
 }
 
-.logo {
+/* Шапка */
+.main-header {
+  padding: 20px 0;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo-container {
   text-align: center;
-  font-size: 28px;
-  background: linear-gradient(45deg, #6c5ce7, #00cec9);
+}
+
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  margin: 20px 0;
+  letter-spacing: 1px;
+}
+
+.logo-subtext {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: -5px;
 }
 
 /* Сетка товаров */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 25px;
 }
 
 .item {
-  background: #1e1e24;
+  background: var(--darker);
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  overflow: hidden;
   transition: transform 0.3s;
 }
 
@@ -45,90 +79,135 @@ body {
 
 .item-image {
   width: 100%;
-  border-radius: 12px;
-  aspect-ratio: 1/1;
+  height: 300px;
   object-fit: cover;
+}
+
+.item-info {
+  padding: 20px;
+}
+
+.item h3 {
+  font-size: 1.2rem;
   margin-bottom: 10px;
 }
 
+.price {
+  color: var(--secondary);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
 .buy-button {
-  background: #6c5ce7;
+  background: var(--primary);
   color: white;
   border: none;
   padding: 12px;
-  border-radius: 8px;
   width: 100%;
+  border-radius: 8px;
+  margin-top: 15px;
   cursor: pointer;
-  font-weight: 500;
   transition: background 0.3s;
+  font-weight: 500;
 }
 
 .buy-button:hover {
-  background: #5a4dcc;
+  background: var(--primary-dark);
 }
 
-/* Стили корзины */
+.buy-button.in-cart {
+  background: var(--success);
+  cursor: not-allowed;
+}
+
+/* Кнопка корзины */
 .cart-btn {
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  background: #6c5ce7;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 15px 30px;
   border-radius: 50px;
+  font-size: 1rem;
   cursor: pointer;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
+  gap: 10px;
+  min-width: 200px;
+  justify-content: center;
 }
 
+.cart-counter {
+  background: var(--danger);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+/* Модальное окно корзины */
 .modal {
-  display: none;
   position: fixed;
-  z-index: 1001;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  display: none;
 }
 
 .modal-content {
-  background: #1e1e24;
-  margin: 5% auto;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--darker);
+  border-radius: 20px 20px 0 0;
   padding: 25px;
-  border-radius: 16px;
-  width: 90%;
-  max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  border: 1px solid #333;
 }
 
-#closeCart {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--light);
+  font-size: 1.5rem;
   cursor: pointer;
 }
 
-#closeCart:hover {
-  color: white;
+.cart-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .cart-item {
   display: flex;
   gap: 15px;
-  margin-bottom: 15px;
   padding-bottom: 15px;
-  border-bottom: 1px solid #333;
-  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .cart-item img {
@@ -138,54 +217,62 @@ body {
   border-radius: 8px;
 }
 
+.cart-item-info {
+  flex-grow: 1;
+}
+
 .cart-item h4 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
+  font-size: 1rem;
+  margin-bottom: 5px;
 }
 
-.cart-item button {
-  background: #ff4757;
-  color: white;
+.remove-item {
+  background: none;
   border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
+  color: var(--danger);
   cursor: pointer;
-  margin-top: 5px;
 }
 
-.total {
-  font-weight: bold;
-  font-size: 1.3em;
-  margin: 25px 0;
-  text-align: right;
-  color: #00cec9;
+.cart-footer {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 
-.checkout-button {
-  background: #00b894;
+.total-price {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.checkout-btn {
+  background: var(--success);
   color: white;
   border: none;
   padding: 15px;
   width: 100%;
   border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 16px;
   transition: background 0.3s;
 }
 
-.checkout-button:hover {
+.checkout-btn:hover {
   background: #00997b;
 }
 
 /* Адаптивность */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .items-grid {
     grid-template-columns: 1fr;
   }
   
-  .modal-content {
-    margin: 10% auto;
-    width: 85%;
+  .item-image {
+    height: 250px;
+  }
+  
+  .cart-btn {
+    width: 90%;
   }
 }

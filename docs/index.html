@@ -3,23 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OUTFIT LAB | Магазин премиум одежды</title>
+  <title>OUTFIT LAB | Premium Fashion</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap">
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#0f0f12">
 </head>
 <body>
   <div class="app-wrapper">
-    <!-- Шапка с логотипом -->
+    <!-- Шапка -->
     <header class="main-header">
       <div class="logo-container">
         <h1 class="logo-text">OUTFIT LAB</h1>
         <p class="logo-subtext">Premium Fashion</p>
-      </div>
-      <div class="header-actions">
-        <button id="menuBtn" aria-label="Меню">☰</button>
       </div>
     </header>
 
@@ -28,9 +23,9 @@
       <div id="itemsContainer" class="items-grid"></div>
     </main>
 
-    <!-- Кнопка корзины -->
-    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
-      <span class="cart-icon">🛍️</span>
+    <!-- Большая кнопка корзины снизу -->
+    <button id="cartBtn" class="cart-btn">
+      <span class="cart-icon">🛍️ Корзина</span>
       <span id="cartCounter" class="cart-counter">0</span>
     </button>
 
@@ -39,7 +34,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Ваша корзина</h2>
-          <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
+          <button id="closeCart" class="close-btn">&times;</button>
         </div>
         <div id="cartItems" class="cart-items-list"></div>
         <div class="cart-footer">
@@ -50,11 +45,6 @@
           <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
         </div>
       </div>
-    </div>
-
-    <!-- Уведомление для мобильных -->
-    <div id="mobileNotice" class="mobile-notice">
-      Используйте последнюю версию Telegram для лучшего опыта
     </div>
   </div>
 

@@ -17,8 +17,7 @@ const elements = {
   cartItems: document.getElementById('cartItems'),
   cartTotal: document.getElementById('cartTotal'),
   closeCart: document.getElementById('closeCart'),
-  checkoutBtn: document.getElementById('checkoutBtn'),
-  mobileNotice: document.getElementById('mobileNotice')
+  checkoutBtn: document.getElementById('checkoutBtn')
 };
 
 // Инициализация
@@ -26,11 +25,6 @@ function init() {
   setupEventListeners();
   loadItems();
   updateCartUI();
-  
-  // Проверка мобильного устройства
-  if (/Mobi|Android/i.test(navigator.userAgent)) {
-    elements.mobileNotice.style.display = 'block';
-  }
 }
 
 // Загрузка товаров
@@ -47,83 +41,89 @@ async function loadItems() {
 
 // Рендер товаров
 function renderItems() {
-  elements.itemsContainer.innerHTML = state.items.map(item => `
+  elements.itemsContainer.innerHTML = state.items.map(item => {
+    const inCart = isItemInCart(item);
+    return `
     <div class="item">
       <img src="${item.image}" alt="${item.name}" class="item-image">
       <div class="item-info">
         <h3>${item.name}</h3>
-        <p class="price">${Number(item.price).toLocaleString('ru-RU')} ₽</p>
+        <p class="price">${formatPrice(item.price)} ₽</p>
         <p>Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button" onclick="addToCart(${state.items.indexOf(item)})">
-          В корзину
+        <button class="buy-button ${inCart ? 'in-cart' : ''}" 
+                onclick="addToCart(${state.items.indexOf(item)})"
+                ${inCart ? 'disabled' : ''}>
+          ${inCart ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
+}
+
+// Проверка наличия товара в корзине
+function isItemInCart(item) {
+  return state.cart.some(cartItem => 
+    cartItem.name === item.name && 
+    cartItem.price === item.price && 
+    cartItem.size === item.size
+  );
+}
+
+// Форматирование цены
+function formatPrice(price) {
+  return Number(price).toLocaleString('ru-RU');
 }
 
 // Работа с корзиной
 function loadCart() {
   try {
-    // Пробуем получить из localStorage
-    const localCart = localStorage.getItem('cart');
-    if (localCart) return JSON.parse(localCart);
-    
-    // Пробуем получить из Telegram CloudStorage
-    if (tg?.WebApp?.CloudStorage?.getItem) {
-      const tgCart = tg.WebApp.CloudStorage.getItem('cart');
-      return tgCart ? JSON.parse(tgCart) : [];
-    }
-    
-    return [];
-  } catch (e) {
-    console.error('Ошибка загрузки корзины:', e);
+    return JSON.parse(localStorage.getItem('cart')) || [];
+  } catch {
     return [];
   }
 }
 
 function saveCart() {
-  try {
-    localStorage.setItem('cart', JSON.stringify(state.cart));
-    
-    // Дублируем в Telegram CloudStorage
-    if (tg?.WebApp?.CloudStorage?.setItem) {
-      tg.WebApp.CloudStorage.setItem('cart', JSON.stringify(state.cart));
-    }
-  } catch (e) {
-    console.error('Ошибка сохранения корзины:', e);
-  }
+  localStorage.setItem('cart', JSON.stringify(state.cart));
   updateCartUI();
+  renderItems(); // Перерисовываем кнопки товаров
 }
 
+// Добавление в корзину с защитой от дублирования
 function addToCart(itemIndex) {
   const item = state.items[itemIndex];
+  
+  if (isItemInCart(item)) {
+    tg.showAlert(`"${item.name}" уже в корзине!`);
+    return;
+  }
+
   state.cart.push(item);
   saveCart();
   
   // Визуальная обратная связь
-  if (event) {
-    event.target.textContent = '✓ Добавлено';
-    event.target.style.backgroundColor = '#00b894';
-    setTimeout(() => {
-      event.target.textContent = 'В корзину';
-      event.target.style.backgroundColor = '';
-    }, 1000);
-  }
+  const button = event.target;
+  button.textContent = '✓ В корзине';
+  button.classList.add('in-cart');
+  button.disabled = true;
   
   tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
+// Удаление из корзины
 function removeFromCart(index) {
   state.cart.splice(index, 1);
   saveCart();
   renderCart();
 }
 
+// Обновление UI корзины
 function updateCartUI() {
-  elements.cartCounter.textContent = state.cart.length;
-  tg.MainButton.setText(`Корзина (${state.cart.length})`);
-  state.cart.length > 0 ? tg.MainButton.show() : tg.MainButton.hide();
+  const count = state.cart.length;
+  elements.cartCounter.textContent = count;
+  tg.MainButton.setText(`Корзина (${count})`);
+  count > 0 ? tg.MainButton.show() : tg.MainButton.hide();
 }
 
 // Рендер корзины
@@ -133,32 +133,27 @@ function renderCart() {
       <img src="${item.image}" alt="${item.name}">
       <div class="cart-item-info">
         <h4>${item.name}</h4>
-        <p>${Number(item.price).toLocaleString('ru-RU')} ₽ • ${item.size || 'без размера'}</p>
+        <p>${formatPrice(item.price)} ₽ • ${item.size || 'без размера'}</p>
       </div>
       <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
   
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  elements.cartTotal.textContent = `${total.toLocaleString('ru-RU')} ₽`;
+  elements.cartTotal.textContent = `${formatPrice(total)} ₽`;
 }
 
 // Оформление заказа
 function checkout() {
-  if (state.cart.length === 0) {
-    tg.showAlert('Корзина пуста!');
-    return;
-  }
+  if (state.cart.length === 0) return;
   
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
   const orderText = state.cart.map(item => 
-    `• ${item.name} - ${item.price} ₽`).join('\n');
+    `• ${item.name} - ${formatPrice(item.price)} ₽`).join('\n');
   
-  tg.showAlert(`Заказ на ${total} ₽:\n\n${orderText}`);
+  tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${formatPrice(total)} ₽`);
   
-  // Можно добавить отправку заказа в Telegram
-  // tg.sendData(JSON.stringify({ cart: state.cart, total: total }));
-  
+  // Очистка корзины после заказа
   state.cart = [];
   saveCart();
   closeCart();
