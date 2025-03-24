@@ -1,7 +1,7 @@
 import os
 import telebot
 import requests
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,14 +9,16 @@ bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
 ADMINS = [5000931101]  # Ваш ID
 
-# Кэш последних товаров
-last_items_cache = []
+def is_admin(user_id):
+    return user_id in ADMINS
 
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("🛍️ Открыть магазин", 
-              url=f"https://t.me/{bot.get_me().username}?startapp=outfitlab"))
+    markup.add(InlineKeyboardButton(
+        "🛍️ Открыть магазин", 
+        web_app=WebAppInfo(url=f"https://{bot.get_me().username}.t.me/{bot.get_me().username}?startapp=outfitlab")
+    ))
     
     bot.send_message(
         message.chat.id,
@@ -26,47 +28,72 @@ def start(message):
 
 @bot.message_handler(commands=['additem'])
 def add_item(message):
-    if message.from_user.id not in ADMINS:
-        return bot.reply_to(message, "❌ Только для админов")
-
-    msg = bot.send_message(message.chat.id, 
-                         "Отправьте фото + подпись в формате:\nНазвание | Цена | Размер")
+    if not is_admin(message.from_user.id):
+        return bot.reply_to(message, "❌ Эта команда только для администраторов")
+    
+    msg = bot.send_message(
+        message.chat.id,
+        "📤 Отправьте фото товара с подписью в формате:\n"
+        "<b>Название | Цена | Размер</b>\n\n"
+        "Пример: <i>Футболка премиум | 1990 | XL</i>",
+        parse_mode="HTML"
+    )
     bot.register_next_step_handler(msg, process_item)
 
 def process_item(message):
     try:
         if not message.photo:
-            raise ValueError("Нужно фото!")
-
-        name, price, size = map(str.strip, message.caption.split('|'))
-        if not price.isdigit():
-            raise ValueError("Цена должна быть числом")
-
+            raise ValueError("❌ Требуется фото товара")
+        
+        if not message.caption:
+            raise ValueError("❌ Требуется описание товара")
+        
+        parts = [p.strip() for p in message.caption.split('|')]
+        if len(parts) < 3:
+            raise ValueError("❌ Неверный формат. Используйте: Название | Цена | Размер")
+        
+        name, price, size = parts[:3]
+        
+        # Валидация цены
+        try:
+            price = float(price.replace(',', '.'))
+            if price <= 0:
+                raise ValueError("Цена должна быть больше нуля")
+        except ValueError:
+            raise ValueError("❌ Некорректная цена. Используйте числа")
+        
+        # Получаем лучшее качество фото
         file_info = bot.get_file(message.photo[-1].file_id)
         image_url = f"https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}"
-
-        # 1. Отправляем в Google Sheets
-        requests.post(GOOGLE_SCRIPT_URL, json={
-            'name': name,
-            'price': price,
-            'size': size,
-            'image': image_url
-        })
-
-        # 2. Добавляем в кэш
-        last_items_cache.append({
-            'name': name,
-            'price': price,
-            'size': size,
-            'image': image_url
-        })
-
-        # 3. Уведомляем пользователя
-        bot.reply_to(message, f"✅ {name} добавлен!")
-
+        
+        # Отправляем в Google Sheets
+        response = requests.post(
+            GOOGLE_SCRIPT_URL,
+            json={
+                'name': name,
+                'price': price,
+                'image': image_url,
+                'size': size
+            },
+            timeout=10
+        )
+        
+        if response.status_code != 200:
+            raise ValueError(f"❌ Ошибка сохранения: {response.text}")
+        
+        bot.reply_to(
+            message,
+            f"✅ <b>{name}</b> успешно добавлен!\n"
+            f"Цена: {price} ₽\n"
+            f"Размер: {size}",
+            parse_mode="HTML"
+        )
+        
     except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {str(e)}")
+        bot.reply_to(message, str(e))
+        if "name" in locals():
+            print(f"Ошибка добавления товара: {name} - {str(e)}")
 
 if __name__ == '__main__':
     print("Бот запущен...")
-    bot.polling()
+    bot.infinity_polling()

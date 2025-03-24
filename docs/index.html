@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>OUTFIT LAB | Premium Fashion</title>
+  <meta name="description" content="Магазин премиальной одежды">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -11,8 +12,13 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* Инлайн стили для первоначального отображения */
+    .app-wrapper { opacity: 0; transition: opacity 0.3s ease; }
+    .app-wrapper.ready { opacity: 1; }
+  </style>
 </head>
 <body>
   <div class="app-wrapper">
@@ -28,7 +34,8 @@
     </main>
 
     <button id="cartBtn" class="cart-btn">
-      <span class="cart-icon">🛍️ Корзина</span>
+      <span class="cart-icon">🛍️</span>
+      <span class="cart-text">Корзина</span>
       <span id="cartCounter" class="cart-counter">0</span>
     </button>
 
@@ -48,17 +55,30 @@
         </div>
       </div>
     </div>
+
+    <div id="loadingIndicator" class="loading-indicator">
+      <div class="loader"></div>
+      <p>Загрузка товаров...</p>
+    </div>
   </div>
 
   <script src="app.js"></script>
   <script>
+    // Инициализация Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('ServiceWorker registered'))
-          .catch(err => console.log('ServiceWorker error:', err));
+          .then(reg => console.log('ServiceWorker зарегистрирован'))
+          .catch(err => console.error('Ошибка ServiceWorker:', err));
       });
     }
+
+    // Плавное появление контента
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelector('.app-wrapper').classList.add('ready');
+      }, 100);
+    });
   </script>
 </body>
 </html>
