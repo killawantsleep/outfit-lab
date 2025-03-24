@@ -9,28 +9,29 @@ bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
 ADMINS = [5000931101]  # Ваш ID
 
-def is_admin(user_id):
-    return user_id in ADMINS
-
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton(
-        "🛍️ Открыть магазин", 
-        web_app=WebAppInfo(url=f"https://{bot.get_me().username}.t.me/{bot.get_me().username}?startapp=outfitlab")
-    ))
-    
-    bot.send_message(
-        message.chat.id,
-        "👋 Добро пожаловать в OUTFIT LAB!\nТовары обновляются автоматически.",
-        reply_markup=markup
-    )
+    try:
+        markup = InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(
+            "🛍️ Открыть магазин", 
+            web_app=WebAppInfo(url=f"https://{bot.get_me().username}.t.me/{bot.get_me().username}/outfitlab")
+        ))
+        
+        bot.send_message(
+            message.chat.id,
+            "👋 Добро пожаловать в OUTFIT LAB!\nТовары обновляются автоматически.",
+            reply_markup=markup
+        )
+    except Exception as e:
+        print(f"Ошибка в команде /start: {str(e)}")
+        bot.reply_to(message, "Произошла ошибка. Попробуйте позже.")
 
 @bot.message_handler(commands=['additem'])
 def add_item(message):
-    if not is_admin(message.from_user.id):
-        return bot.reply_to(message, "❌ Эта команда только для администраторов")
-    
+    if message.from_user.id not in ADMINS:
+        return bot.reply_to(message, "❌ Только для админов")
+
     msg = bot.send_message(
         message.chat.id,
         "📤 Отправьте фото товара с подписью в формате:\n"
@@ -91,8 +92,7 @@ def process_item(message):
         
     except Exception as e:
         bot.reply_to(message, str(e))
-        if "name" in locals():
-            print(f"Ошибка добавления товара: {name} - {str(e)}")
+        print(f"Ошибка добавления товара: {str(e)}")
 
 if __name__ == '__main__':
     print("Бот запущен...")

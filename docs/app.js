@@ -4,9 +4,14 @@ const CONFIG = {
     TIMEOUT: 10000 // 10 секунд
   };
   
-  // Инициализация Telegram WebApp
+  // Проверка инициализации Telegram WebApp
   if (!window.Telegram?.WebApp?.initData) {
-    showFatalError("Пожалуйста, откройте приложение через Telegram");
+    document.body.innerHTML = `
+      <div class="error-screen">
+        <h2>Пожалуйста, откройте приложение через Telegram</h2>
+        <p>Это мини-приложение работает только внутри Telegram</p>
+      </div>
+    `;
     throw new Error("Telegram WebApp not initialized");
   }
   
@@ -17,7 +22,7 @@ const CONFIG = {
   // Состояние приложения
   const state = {
     items: [],
-    cart: loadCart(),
+    cart: [],
     isLoading: false
   };
   
@@ -28,11 +33,11 @@ const CONFIG = {
     errorContainer: document.getElementById('errorContainer')
   };
   
-  // Инициализация приложения
-  document.addEventListener('DOMContentLoaded', () => {
-    setupEventListeners();
+  // Инициализация
+  function init() {
     loadItems();
-  });
+    setupEventListeners();
+  }
   
   // Загрузка товаров
   async function loadItems() {
@@ -55,47 +60,79 @@ const CONFIG = {
         throw new Error(`Ошибка сервера: ${response.status}`);
       }
   
-      const data = await parseResponse(response);
+      const text = await response.text();
+      let data;
       
-      if (!Array.isArray(data)) {
-        throw new Error("Неверный формат данных");
+      try {
+        // Исправляем возможные проблемы с JSON
+        const fixedText = text.replace(/,\s*\]/g, ']').replace(/"size":"([^"]*)}/g, '"size":"$1"');
+        data = JSON.parse(fixedText);
+      } catch (e) {
+        throw new Error("Неверный формат данных от сервера");
       }
   
-      state.items = data.filter(validateItem);
+      if (!Array.isArray(data)) {
+        throw new Error("Ожидался массив товаров");
+      }
+  
+      // Фильтрация и валидация данных
+      state.items = data.filter(item => 
+        item && 
+        item.name && 
+        !isNaN(parseFloat(item.price)) &&
+        item.image
+      );
+      
       renderItems();
       
     } catch (error) {
       console.error('Ошибка загрузки:', error);
-      showError(error.message);
-      tg.showAlert("Не удалось загрузить товары. Попробуйте позже.");
+      showError(error.message || "Не удалось загрузить товары");
+      tg.showAlert("Ошибка загрузки товаров. Попробуйте позже.");
     } finally {
       state.isLoading = false;
       showLoading(false);
     }
   }
   
-  // Вспомогательные функции
-  function parseResponse(response) {
-    return response.text().then(text => {
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        throw new Error("Невалидный JSON в ответе");
-      }
-    });
+  // Рендер товаров
+  function renderItems() {
+    if (state.items.length === 0) {
+      elements.itemsContainer.innerHTML = `
+        <div class="empty-state">
+          <p>Товары не найдены</p>
+          <button onclick="loadItems()">Обновить</button>
+        </div>
+      `;
+      return;
+    }
+  
+    elements.itemsContainer.innerHTML = state.items.map(item => `
+      <div class="item">
+        <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='https://via.placeholder.com/300'">
+        <div class="item-info">
+          <h3>${item.name}</h3>
+          <p class="price">${formatPrice(item.price)} ₽</p>
+          <p>Размер: ${item.size || 'не указан'}</p>
+          <button class="buy-button" onclick="addToCart('${item.name}', ${item.price}, '${item.size}')">
+            В корзину
+          </button>
+        </div>
+      </div>
+    `).join('');
   }
   
-  function validateItem(item) {
-    return item && 
-           typeof item.name === 'string' && 
-           !isNaN(parseFloat(item.price)) &&
-           typeof item.image === 'string';
+  // Форматирование цены
+  function formatPrice(price) {
+    return Number(price).toLocaleString('ru-RU');
   }
   
+  // Показать/скрыть загрузку
   function showLoading(show) {
     elements.loadingIndicator.style.display = show ? 'flex' : 'none';
   }
   
+  // Показать ошибку
   function showError(message) {
     elements.errorContainer.innerHTML = `
       <div class="error-message">
@@ -110,15 +147,5 @@ const CONFIG = {
     elements.errorContainer.style.display = 'none';
   }
   
-  function showFatalError(message) {
-    document.body.innerHTML = `
-      <div class="fatal-error">
-        <h2>${message}</h2>
-        <a href="https://t.me/outfitlab_bot" class="tg-button">
-          Открыть в Telegram
-        </a>
-      </div>
-    `;
-  }
-  
-  // Остальные функции (renderItems, cart логика и т.д.) остаются без изменений
+  // Инициализация при загрузке
+  document.addEventListener('DOMContentLoaded', init);
