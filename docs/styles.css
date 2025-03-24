@@ -22,6 +22,7 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
@@ -40,6 +41,13 @@ body {
   padding: 20px;
   padding-bottom: 100px;
   position: relative;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .main-header {
@@ -344,7 +352,7 @@ body {
   right: 0;
   bottom: 0;
   background: rgba(15, 15, 18, 0.9);
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -369,18 +377,17 @@ body {
 }
 
 .error-container {
-  text-align: center;
-  padding: 40px;
-  color: var(--danger);
   background: rgba(255, 71, 87, 0.1);
   border-radius: 16px;
+  padding: 20px;
   margin: 20px;
+  color: var(--danger);
+  text-align: center;
+  display: none;
 }
 
-.error-detail {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 10px 0 20px;
+.error-message {
+  margin-bottom: 15px;
 }
 
 .retry-btn {
@@ -397,16 +404,6 @@ body {
 
 .retry-btn:hover {
   background: var(--primary-dark);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 768px) {

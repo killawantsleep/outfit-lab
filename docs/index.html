@@ -15,13 +15,56 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    /* Инлайн стили для первоначального отображения */
-    .app-wrapper { opacity: 0; transition: opacity 0.3s ease; }
-    .app-wrapper.ready { opacity: 1; }
+    /* Инлайн стили для первоначальной загрузки */
+    body {
+      background-color: #0f0f12;
+      overflow: hidden;
+    }
+    .splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #0f0f12;
+      z-index: 1000;
+    }
+    .splash-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      background: linear-gradient(45deg, #6c5ce7, #00cec9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .splash-loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(108, 92, 231, 0.3);
+      border-top: 4px solid #6c5ce7;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <div class="app-wrapper">
+  <!-- Splash Screen -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-logo">OUTFIT LAB</div>
+    <div class="splash-loader"></div>
+  </div>
+
+  <!-- Основное приложение -->
+  <div class="app-wrapper" id="appWrapper" style="display: none;">
     <header class="main-header">
       <div class="logo-container">
         <h1 class="logo-text">OUTFIT LAB</h1>
@@ -30,6 +73,7 @@
     </header>
 
     <main class="content-area">
+      <div id="errorContainer" class="error-container" style="display: none;"></div>
       <div id="itemsContainer" class="items-grid"></div>
     </main>
 
@@ -64,20 +108,20 @@
 
   <script src="app.js"></script>
   <script>
-    // Инициализация Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('ServiceWorker зарегистрирован'))
-          .catch(err => console.error('Ошибка ServiceWorker:', err));
-      });
-    }
-
-    // Плавное появление контента
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.querySelector('.app-wrapper').classList.add('ready');
-      }, 100);
+    // Инициализация приложения после загрузки
+    document.addEventListener('DOMContentLoaded', function() {
+      // Скрываем splash screen и показываем приложение
+      setTimeout(function() {
+        document.getElementById('splashScreen').style.display = 'none';
+        document.getElementById('appWrapper').style.display = 'block';
+        
+        // Инициализация Service Worker
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker зарегистрирован'))
+            .catch(err => console.error('Ошибка Service Worker:', err));
+        }
+      }, 1000);
     });
   </script>
 </body>
