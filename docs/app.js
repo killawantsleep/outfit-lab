@@ -1,91 +1,132 @@
-// 1. Инициализация Telegram
+// Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.MainButton.setText("🛍️ Корзина").show();
 
-// 2. Конфигурация
-const API_URL = 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec';
-let isFirstLoad = true;
+// Состояние приложения
+const state = {
+  items: [],
+  cart: JSON.parse(localStorage.getItem('cart')) || []
+};
 
-// 3. Загрузка товаров с приоритетом свежих данных
+// Элементы интерфейса
+const elements = {
+  itemsContainer: document.getElementById('itemsContainer'),
+  cartButton: document.getElementById('cartButton'),
+  cartCounter: document.getElementById('cartCounter'),
+  cartModal: document.getElementById('cartModal'),
+  cartItems: document.getElementById('cartItems'),
+  cartTotal: document.getElementById('cartTotal'),
+  closeCart: document.getElementById('closeCart'),
+  checkoutButton: document.getElementById('checkoutButton')
+};
+
+// Инициализация корзины
+function initCart() {
+  updateCartCounter();
+  
+  // Обработчики событий
+  elements.cartButton.addEventListener('click', openCart);
+  elements.closeCart.addEventListener('click', closeCart);
+  elements.checkoutButton.addEventListener('click', checkout);
+}
+
+// Загрузка товаров
 async function loadItems() {
   try {
-    // 3.1. Показываем старые данные сразу (если есть)
-    const cached = localStorage.getItem('items');
-    if (cached && isFirstLoad) {
-      renderItems(JSON.parse(cached));
-    }
-
-    // 3.2. Загружаем свежие данные (с уникальным параметром против кеша)
-    const response = await fetch(`${API_URL}?nocache=${Date.now()}`);
-    const freshData = await response.json();
-
-    // 3.3. Проверяем структуру данных
-    if (!Array.isArray(freshData)) {
-      throw new Error('Данные не в формате массива');
-    }
-
-    // 3.4. Обновляем интерфейс и кеш
-    renderItems(freshData);
-    localStorage.setItem('items', JSON.stringify(freshData));
-
+    const response = await fetch('https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec');
+    state.items = await response.json();
+    renderItems();
   } catch (error) {
-    console.error('Ошибка:', error);
-    // Показываем кеш даже при ошибке сети
-    if (!localStorage.getItem('items')) {
-      renderItems([{
-        name: "Попробуйте обновить страницу",
-        price: 0,
-        image: "https://via.placeholder.com/300",
-        size: "XL"
-      }]);
-    }
-  } finally {
-    isFirstLoad = false;
+    console.error("Ошибка загрузки:", error);
+    renderItems([{
+      name: "Ошибка загрузки",
+      price: 0,
+      image: "https://via.placeholder.com/300",
+      size: "XL"
+    }]);
   }
 }
 
-// 4. Улучшенный рендеринг товаров
-function renderItems(items) {
-  const container = document.getElementById('itemsContainer');
-  if (!container) return;
-
-  // Сортируем по дате добавления (новые сверху)
-  const sortedItems = [...items].reverse();
-  
-  container.innerHTML = sortedItems.map(item => `
+// Отображение товаров
+function renderItems() {
+  elements.itemsContainer.innerHTML = state.items.map(item => `
     <div class="item">
-      <img src="${item.image || 'https://via.placeholder.com/300'}" 
-           class="item-image" 
-           alt="${item.name}"
-           loading="lazy">
-      <div class="item-info">
-        <h3>${item.name}</h3>
-        <p class="price">${parseInt(item.price).toLocaleString('ru-RU')} ₽</p>
-        <p class="size">Размер: ${item.size || 'не указан'}</p>
-      </div>
-      <button class="buy-button" onclick="handleBuy('${item.name.replace(/'/g, "\\'")}')">
+      <img src="${item.image}" class="item-image">
+      <h3>${item.name}</h3>
+      <p>${item.price} ₽</p>
+      <p>Размер: ${item.size || 'не указан'}</p>
+      <button class="buy-button" onclick="addToCart(${state.items.indexOf(item)})">
         В корзину
       </button>
     </div>
   `).join('');
 }
 
-// 5. Обработка покупки
-function handleBuy(itemName) {
-  tg.showAlert(`✅ Добавлено: ${itemName}`);
-  tg.MainButton.show();
+// Функции корзины
+function addToCart(itemIndex) {
+  const item = state.items[itemIndex];
+  state.cart.push(item);
+  saveCart();
+  tg.showAlert(`✅ ${item.name} добавлен в корзину`);
 }
 
-// 6. Запуск и автообновление
+function removeFromCart(index) {
+  state.cart.splice(index, 1);
+  saveCart();
+  renderCart();
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(state.cart));
+  updateCartCounter();
+}
+
+function updateCartCounter() {
+  elements.cartCounter.textContent = state.cart.length;
+  tg.MainButton.setText(`🛍️ Корзина (${state.cart.length})`);
+  state.cart.length > 0 ? tg.MainButton.show() : tg.MainButton.hide();
+}
+
+function openCart() {
+  renderCart();
+  elements.cartModal.style.display = 'block';
+}
+
+function closeCart() {
+  elements.cartModal.style.display = 'none';
+}
+
+function renderCart() {
+  elements.cartItems.innerHTML = state.cart.map((item, index) => `
+    <div class="cart-item">
+      <img src="${item.image}">
+      <div>
+        <h4>${item.name}</h4>
+        <p>${item.price} ₽</p>
+        <button onclick="removeFromCart(${index})">❌ Удалить</button>
+      </div>
+    </div>
+  `).join('');
+  
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  elements.cartTotal.textContent = `Итого: ${total} ₽`;
+}
+
+function checkout() {
+  tg.showAlert(`Оформлен заказ на ${state.cart.length} товаров!`);
+  state.cart = [];
+  saveCart();
+  closeCart();
+}
+
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
+  tg.MainButton.setText("🛍️ Корзина");
+  initCart();
   loadItems();
-  // Обновляем каждые 15 секунд
-  setInterval(loadItems, 15000);
+  setInterval(loadItems, 30000); // Обновление каждые 30 сек
 });
 
-// 7. Ручное обновление по команде из бота
-window.forceUpdate = () => {
-  localStorage.removeItem('items');
-  loadItems();
-};
+// Глобальные функции для HTML
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;

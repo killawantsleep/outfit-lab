@@ -17,10 +17,28 @@
         <button id="filterButton">⚙️</button>
       </div>
     </header>
+    
     <main class="app-main">
       <div id="itemsContainer" class="items-grid"></div>
     </main>
   </div>
+
+  <!-- Кнопка корзины -->
+  <button id="cartButton" class="cart-btn">
+    🛍️ Корзина <span id="cartCounter">0</span>
+  </button>
+
+  <!-- Модальное окно корзины -->
+  <div id="cartModal" class="modal">
+    <div class="modal-content">
+      <span id="closeCart">&times;</span>
+      <h2>Ваша корзина</h2>
+      <div id="cartItems"></div>
+      <p id="cartTotal" class="total">Итого: 0 ₽</p>
+      <button id="checkoutButton" class="checkout-button">Оформить заказ</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
