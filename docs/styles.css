@@ -3,29 +3,90 @@ body {
   font-family: 'Inter', sans-serif;
   background: #0f0f12;
   color: white;
-  padding: 16px;
   margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.logo {
+  text-align: center;
+  font-size: 28px;
+  background: linear-gradient(45deg, #6c5ce7, #00cec9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 20px 0;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.app-actions button {
+  background: rgba(108, 92, 231, 0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 .item {
   background: #1e1e24;
   border-radius: 16px;
   padding: 20px;
-  margin-bottom: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.item:hover {
+  transform: translateY(-5px);
+}
+
+.item-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.item-image {
+  width: 100%;
+  border-radius: 12px;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  margin-bottom: 12px;
 }
 
 .item h3 {
   margin: 0 0 8px 0;
   font-size: 18px;
-  color: #fff;
 }
 
 .item p {
   margin: 0 0 12px 0;
   color: #6c5ce7;
   font-weight: bold;
-  font-size: 16px;
 }
 
 .buy-button {
@@ -36,6 +97,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: 0.3s;
+  width: 100%;
 }
 
 .buy-button:hover {
@@ -44,10 +106,12 @@ body {
 
 /* Для мобильных */
 @media (max-width: 600px) {
-  body {
-    padding: 12px;
+  .items-grid {
+    grid-template-columns: 1fr;
   }
-  .item {
-    padding: 16px;
+  
+  .app-header {
+    flex-direction: column;
+    gap: 15px;
   }
 }

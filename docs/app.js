@@ -7,32 +7,41 @@ tg.MainButton.setParams({
   textColor: "#ffffff"
 }).show();
 
-// Mock-данные (замените на API)
-const items = [
-  {
-    id: 1,
-    name: "Футболка BURBERRY 2025",
-    price: 18990,
-    image: "https://ibb.co/TDqyBx0H",
-    colors: ["#000000", "#6c5ce7", "#ffffff"]
-  },
-  {
-    id: 2,
-    name: "КРОССОВки NIKE A.I.",
-    price: 24990,
-    image: "https://example.com/sneakers.jpg",
-    badge: "NEW"
+// Загрузка товаров с сервера
+async function loadItems() {
+  try {
+    const response = await fetch('https://killawantsleep.github.io/outfit-lab/');
+    const items = await response.json();
+    renderItems(items);
+  } catch (error) {
+    console.error('Ошибка загрузки товаров:', error);
+    // Показываем заглушку, если API не доступно
+    renderItems([
+      {
+        id: 1,
+        name: "Футболка BURBERRY 2025",
+        price: 18990,
+        image: "https://ibb.co/TDqyBx0H",
+        badge: "NEW"
+      },
+      {
+        id: 2,
+        name: "КРОССОВки NIKE A.I.",
+        price: 24990,
+        image: "https://ibb.co/example.jpg"
+      }
+    ]);
   }
-];
+}
 
 // Рендер товаров
-function renderItems() {
+function renderItems(items) {
   const container = document.getElementById('itemsContainer');
   
   container.innerHTML = items.map(item => `
     <div class="item" data-id="${item.id}">
       ${item.badge ? `<span class="item-badge">${item.badge}</span>` : ''}
-      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <img src="${item.image}" alt="${item.name}" class="item-image" loading="lazy">
       <h3>${item.name}</h3>
       <p>${item.price.toLocaleString()} ₽</p>
       <button class="buy-button" onclick="tg.showAlert('Добавлено: ${item.name}')">
@@ -42,7 +51,18 @@ function renderItems() {
   `).join('');
 }
 
-// Плавная загрузка
+// Обработчики кнопок
+document.getElementById('menuButton').addEventListener('click', () => {
+  tg.showAlert('Меню категорий будет здесь!');
+});
+
+document.getElementById('filterButton').addEventListener('click', () => {
+  tg.showAlert('Фильтры будут здесь!');
+});
+
+// Запуск при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(renderItems, 300); // Имитация загрузки
+  loadItems();
+  // Автообновление каждые 5 минут
+  setInterval(loadItems, 300000);
 });
