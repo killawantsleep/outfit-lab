@@ -14,13 +14,14 @@ logger = logging.getLogger(__name__)
 # Загрузка конфига
 load_dotenv()
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
-GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")  # Добавьте в .env!
+GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
+FRONTEND_URL = "https://killawantsleep.github.io/outfit-lab/"  # Замените на ваш GitHub Pages URL
 
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.reply_to(
         message,
-        "🛍️ Отправьте товары через /additem\n"
+        "🛍️ Отправьте товар через /additem\n"
         "Формат: Фото + подпись\n"
         "Пример: Футболка Gucci | 5990 | M"
     )
@@ -44,8 +45,8 @@ def process_item(message):
         if len(parts) != 3:
             raise ValueError("❌ Неверный формат. Используйте: Название | Цена | Размер")
 
-        name, price, size = parts
-        if not price.strip().isdigit():
+        name, price, size = [part.strip() for part in parts]
+        if not price.isdigit():
             raise ValueError("❌ Цена должна быть числом (например: 5990)")
 
         # Загрузка фото
@@ -56,22 +57,23 @@ def process_item(message):
         response = requests.post(
             GOOGLE_SCRIPT_URL,
             json={
-                'action': 'add',
-                'name': name.strip(),
-                'price': price.strip(),
-                'size': size.strip(),
+                'name': name,
+                'price': price,
+                'size': size,
                 'image': image_url
             }
         )
 
         if response.status_code == 200:
-            bot.reply_to(message, f"✅ Товар добавлен!\n{name.strip()}")
+            # Принудительно обновляем фронтенд
+            requests.get(f"{FRONTEND_URL}?force_update=1")  # Триггер обновления
+            bot.reply_to(message, f"✅ Товар добавлен!\n{name}")
         else:
-            bot.reply_to(message, f"⚠️ Ошибка сервера: {response.text}")
+            bot.reply_to(message, f"⚠️ Ошибка: {response.text}")
 
     except Exception as e:
         logger.error(f"Ошибка: {str(e)}")
-        bot.reply_to(message, str(e))
+        bot.reply_to(message, f"❌ Ошибка: {str(e)}")
 
 if __name__ == '__main__':
     logger.info("Бот запущен...")
