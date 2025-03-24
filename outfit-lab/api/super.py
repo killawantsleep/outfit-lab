@@ -1,38 +1,48 @@
 import os
 import telebot
 import requests
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from dotenv import load_dotenv
 
+# Загрузка переменных
 load_dotenv()
-
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
-FRONTEND_URL = "https://ваш-username.github.io/ваш-репозиторий"  # Замените на ваш URL
 
-# Список ID администраторов (замените на свои)
-ADMINS = [123456789, 987654321]  # Пример ID
+# Конфигурация
+ADMINS = [5000931101, 1931968348]  # Замените на ваш ID Telegram
+BOT_USERNAME = "outfitlaab_bot"  # Без @ (например: "outfitlab_bot")
+MINI_APP_URL = "https://killawantsleep.github.io/outfit-lab/"  # URL вашего мини-приложения
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    # Создаем кнопку
+    # Создаем кнопку для открытия Mini App
     markup = InlineKeyboardMarkup()
-    button = InlineKeyboardButton("🛍️ Перейти в магазин", url=FRONTEND_URL)
-    markup.add(button)
+    
+    # Вариант 1: Прямая ссылка через t.me (лучший способ)
+    mini_app_link = f"https://t.me/{BOT_USERNAME}?startapp=outfitlab"
+    
+    # Вариант 2: WebApp (альтернатива)
+    # markup.add(InlineKeyboardButton(
+    #    "🛍️ Открыть магазин",
+    #    web_app=WebAppInfo(url=MINI_APP_URL)
+    # ))
+    
+    markup.add(InlineKeyboardButton("🛍️ Открыть магазин", url=mini_app_link))
     
     # Приветственное сообщение
     bot.send_message(
         message.chat.id,
         "👋 *Добро пожаловать в OUTFIT LAB BOT!*\n\n"
         "Здесь вы можете купить эксклюзивные вещи от лучших брендов.\n"
-        "Нажмите кнопку ниже, чтобы перейти в каталог:",
+        "Нажмите кнопку ниже, чтобы открыть магазин:",
         parse_mode='Markdown',
         reply_markup=markup
     )
 
 @bot.message_handler(commands=['additem'])
 def add_item(message):
-    # Проверка админского доступа
+    # Проверка прав администратора
     if message.from_user.id not in ADMINS:
         bot.reply_to(message, "⛔ У вас нет прав на эту команду!")
         return
