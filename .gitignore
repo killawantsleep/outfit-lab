@@ -1,12 +1,10 @@
-# Секретные файлы
+# Секреты
 .env
 *.env
-
-# Файлы окружения
-.env.local
-.env.development
-.env.production
 
 # Питон
 __pycache__/
 *.py[cod]
+
+# Системные файлы
+.DS_Store
