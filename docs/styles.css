@@ -1,0 +1,53 @@
+/* Современный тёмный дизайн */
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0f0f12;
+  color: white;
+  padding: 16px;
+  margin: 0;
+}
+
+.item {
+  background: #1e1e24;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.item h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.item p {
+  margin: 0 0 12px 0;
+  color: #6c5ce7;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.buy-button {
+  background: #6c5ce7;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.buy-button:hover {
+  background: #5649c0;
+}
+
+/* Для мобильных */
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+  .item {
+    padding: 16px;
+  }
+}
