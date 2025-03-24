@@ -3,39 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OUTFIT LAB</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+  <title>OUTFIT LAB | Магазин премиум одежды</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap">
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0f0f12">
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <h1 class="logo">OUTFIT LAB</h1>
-      <div class="app-actions">
-        <button id="menuButton">☰</button>
-        <button id="filterButton">⚙️</button>
+  <div class="app-wrapper">
+    <!-- Шапка с логотипом -->
+    <header class="main-header">
+      <div class="logo-container">
+        <h1 class="logo-text">OUTFIT LAB</h1>
+        <p class="logo-subtext">Premium Fashion</p>
+      </div>
+      <div class="header-actions">
+        <button id="menuBtn" aria-label="Меню">☰</button>
       </div>
     </header>
-    
-    <main class="app-main">
+
+    <!-- Основной контент -->
+    <main class="content-area">
       <div id="itemsContainer" class="items-grid"></div>
     </main>
-  </div>
 
-  <!-- Кнопка корзины -->
-  <button id="cartButton" class="cart-btn">
-    🛍️ Корзина <span id="cartCounter">0</span>
-  </button>
+    <!-- Кнопка корзины -->
+    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
+      <span class="cart-icon">🛍️</span>
+      <span id="cartCounter" class="cart-counter">0</span>
+    </button>
 
-  <!-- Модальное окно корзины -->
-  <div id="cartModal" class="modal">
-    <div class="modal-content">
-      <span id="closeCart">&times;</span>
-      <h2>Ваша корзина</h2>
-      <div id="cartItems"></div>
-      <p id="cartTotal" class="total">Итого: 0 ₽</p>
-      <button id="checkoutButton" class="checkout-button">Оформить заказ</button>
+    <!-- Модальное окно корзины -->
+    <div id="cartModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Ваша корзина</h2>
+          <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
+        </div>
+        <div id="cartItems" class="cart-items-list"></div>
+        <div class="cart-footer">
+          <div class="total-price">
+            <span>Итого:</span>
+            <span id="cartTotal">0 ₽</span>
+          </div>
+          <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Уведомление для мобильных -->
+    <div id="mobileNotice" class="mobile-notice">
+      Используйте последнюю версию Telegram для лучшего опыта
     </div>
   </div>
 
