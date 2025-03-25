@@ -1,5 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
+  WEB_APP_URL: 'https://killawantsleep.github.io/outfit-lab/',
   TIMEOUT: 10000
 };
 
