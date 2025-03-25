@@ -8,6 +8,7 @@ load_dotenv()
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
 ADMINS = [5000931101]  # Ваш ID
+WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"  # Ваш GitHub Pages URL
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -15,7 +16,7 @@ def start(message):
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton(
             "🛍️ Открыть магазин", 
-            web_app=WebAppInfo(url=f"https://{bot.get_me().username}.t.me/{bot.get_me().username}/outfitlab")
+            web_app=WebAppInfo(url=WEB_APP_URL)
         ))
         
         bot.send_message(
@@ -25,7 +26,7 @@ def start(message):
         )
     except Exception as e:
         print(f"Ошибка в команде /start: {str(e)}")
-        bot.reply_to(message, "👋 Добро пожаловать в OUTFIT LAB!\nТовары обновляются автоматически.")
+        bot.reply_to(message, "👋 Добро пожаловать в OUTFIT LAB!\nТовары обновляются автоматительно.")
 
 @bot.message_handler(commands=['additem'])
 def add_item(message):
@@ -55,7 +56,6 @@ def process_item(message):
         
         name, price, size = parts[:3]
         
-        # Валидация цены
         try:
             price = float(price.replace(',', '.'))
             if price <= 0:
@@ -63,11 +63,9 @@ def process_item(message):
         except ValueError:
             raise ValueError("❌ Некорректная цена. Используйте числа")
         
-        # Получаем лучшее качество фото
         file_info = bot.get_file(message.photo[-1].file_id)
         image_url = f"https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}"
         
-        # Отправляем в Google Sheets
         response = requests.post(
             GOOGLE_SCRIPT_URL,
             json={

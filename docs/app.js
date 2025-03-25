@@ -3,26 +3,34 @@ const CONFIG = {
   TIMEOUT: 10000
 };
 
-if (!window.Telegram?.WebApp?.initData) {
+// Проверка на открытие в Telegram WebApp
+if (window.Telegram?.WebApp?.initData) {
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+  tg.enableClosingConfirmation();
+} else {
+  // Если открыто не в Telegram, показываем сообщение
   document.body.innerHTML = `
     <div style="padding:40px;text-align:center;">
       <h2>Откройте приложение через Telegram</h2>
       <p>Это мини-приложение работает только внутри Telegram</p>
+      <button onclick="window.location.href='https://t.me/your_bot'" 
+              style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
+        Открыть в Telegram
+      </button>
     </div>
   `;
   throw new Error("Telegram WebApp not initialized");
 }
 
 const tg = window.Telegram.WebApp;
-tg.expand();
-tg.enableClosingConfirmation();
-
 const state = {
   items: [],
   cart: JSON.parse(localStorage.getItem('cart')) || [],
   isLoading: false
 };
 
+// Остальной код остается без изменений...
 const elements = {
   itemsContainer: document.getElementById('itemsContainer'),
   cartBtn: document.getElementById('cartBtn'),

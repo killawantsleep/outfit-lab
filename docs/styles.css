@@ -460,3 +460,31 @@ body {
     font-size: 0.8rem;
   }
 }
+/* Добавьте эти стили в конец файла */
+.items-grid {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Кастомный скроллбар */
+.items-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+/* Улучшение для мобильных устройств */
+@media (max-width: 768px) {
+  .items-grid {
+      max-height: calc(100vh - 180px);
+  }
+}
