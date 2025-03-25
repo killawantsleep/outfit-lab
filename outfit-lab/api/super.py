@@ -1,5 +1,4 @@
 import os
-import json
 import telebot
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
@@ -92,30 +91,6 @@ def process_item(message):
     except Exception as e:
         bot.reply_to(message, str(e))
         print(f"Ошибка добавления товара: {str(e)}")
-
-@bot.message_handler(content_types=['web_app_data'])
-def handle_web_app_data(message):
-    try:
-        data = message.web_app_data.data
-        order_data = json.loads(data)
-        
-        if order_data.get('action') == 'new_order':
-            # Отправляем заказ админам
-            for admin_id in ADMINS:
-                bot.send_message(
-                    admin_id,
-                    order_data['order'],
-                    parse_mode='HTML'
-                )
-            
-            bot.reply_to(
-                message,
-                "✅ Ваш заказ успешно принят! Мы свяжемся с вами в ближайшее время.",
-                parse_mode='HTML'
-            )
-    except Exception as e:
-        print(f"Ошибка обработки заказа: {str(e)}")
-        bot.reply_to(message, "❌ Произошла ошибка при обработке заказа. Пожалуйста, попробуйте еще раз.")
 
 if __name__ == '__main__':
     print("Бот запущен...")

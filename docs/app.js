@@ -3,7 +3,7 @@ const CONFIG = {
   TIMEOUT: 10000
 };
 
-// Проверка Telegram WebApp
+// Проверка на открытие в Telegram WebApp
 if (!window.Telegram?.WebApp?.initData) {
   document.body.innerHTML = `
     <div style="padding:40px;text-align:center;">
@@ -26,8 +26,7 @@ tg.MainButton.hide();
 const state = {
   items: [],
   cart: JSON.parse(localStorage.getItem('cart')) || [],
-  isLoading: false,
-  deliveryCost: 440
+  isLoading: false
 };
 
 const elements = {
@@ -41,19 +40,7 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn'),
-  checkoutModal: document.getElementById('checkoutModal'),
-  closeCheckout: document.getElementById('closeCheckout'),
-  paymentMethod: document.getElementById('paymentMethod'),
-  deliveryMethod: document.getElementById('deliveryMethod'),
-  phoneInput: document.getElementById('phoneInput'),
-  addressInput: document.getElementById('addressInput'),
-  nameInput: document.getElementById('nameInput'),
-  telegramInput: document.getElementById('telegramInput'),
-  deliveryCostDisplay: document.getElementById('deliveryCost'),
-  totalToPay: document.getElementById('totalToPay'),
-  confirmOrderBtn: document.getElementById('confirmOrderBtn'),
-  backToCartBtn: document.getElementById('backToCartBtn')
+searchBtn: document.getElementById('searchBtn')
 };
 
 function init() {
@@ -64,12 +51,16 @@ function init() {
 
 async function loadItems() {
   if (state.isLoading) return;
+  
   state.isLoading = true;
   showLoading(true);
 
   try {
     const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
     const data = await response.json();
+    
+    if (!Array.isArray(data)) throw new Error("Invalid data format");
+    
     state.items = data.filter(item => item?.name && !isNaN(item.price));
     renderItems();
   } catch (error) {
@@ -115,9 +106,13 @@ function addToCart(name, price, size) {
 
   state.cart.push(item);
   updateCart();
-  event.target.textContent = '✓ В корзине';
-  event.target.classList.add('in-cart');
-  event.target.disabled = true;
+  
+  // Обновляем кнопку
+  const button = event.target;
+  button.textContent = '✓ В корзине';
+  button.classList.add('in-cart');
+  button.disabled = true;
+  
   tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
@@ -157,90 +152,112 @@ function removeFromCart(index) {
   renderItems();
 }
 
-function showCheckoutForm() {
-  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  const deliveryCost = elements.deliveryMethod.value === 'delivery' ? state.deliveryCost : 0;
-  elements.deliveryCostDisplay.textContent = `${deliveryCost} ₽`;
-  elements.totalToPay.textContent = `${total + deliveryCost} ₽`;
-  elements.cartModal.style.display = 'none';
-  elements.checkoutModal.style.display = 'block';
+// ... (остальной код остается без изменений)
+
+function setupEventListeners() {
+  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
+  
+  // Проверка элементов перед добавлением обработчиков
+  if (elements.cartBtn) {
+    elements.cartBtn.addEventListener(clickEvent, (e) => {
+      e.preventDefault();
+      renderCart();
+      elements.cartModal.style.display = 'block';
+    });
+  }
+
+  if (elements.closeCart) {
+    elements.closeCart.addEventListener(clickEvent, () => {
+      elements.cartModal.style.display = 'none';
+    });
+  }
+
+  if (elements.checkoutBtn) {
+    elements.checkoutBtn.addEventListener(clickEvent, () => {
+      if (state.cart.length === 0) return;
+      
+      const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+      const orderText = state.cart.map(item => 
+        `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
+      ).join('\n');
+      
+      tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+      
+      state.cart = [];
+      updateCart();
+      renderItems();
+      elements.cartModal.style.display = 'none';
+    });
+  }
+
+  if (elements.searchBtn && elements.searchInput) {
+    elements.searchBtn.addEventListener('click', searchItems);
+    elements.searchInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') searchItems();
+    });
+    elements.searchInput.addEventListener('input', (e) => {
+      if (e.target.value.trim() === '') renderItems();
+    });
+  }
 }
 
-function submitOrder() {
-  const phone = elements.phoneInput.value.trim();
-  const name = elements.nameInput.value.trim();
-  
-  if (!phone || !name) {
-    tg.showAlert("Заполните телефон и ФИО!");
+// Новая вспомогательная функция
+function escapeHtml(unsafe) {
+  return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
+}
+
+function showLoading(show) {
+  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+function searchItems() {
+  if (!state.items.length) {
+    tg.showAlert("Товары ещё не загружены");
     return;
   }
 
-  const orderData = {
-    payment: elements.paymentMethod.value,
-    delivery: elements.deliveryMethod.value,
-    phone,
-    address: elements.addressInput.value.trim(),
-    name,
-    telegram: elements.telegramInput.value.trim(),
-    cart: state.cart,
-    total: elements.totalToPay.textContent
-  };
+  const searchTerm = elements.searchInput.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    renderItems();
+    return;
+  }
 
-  tg.sendData(JSON.stringify({
-    action: 'new_order',
-    order: formatOrderMessage(orderData)
-  }));
+  const filteredItems = state.items.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) || 
+    (item.size && item.size.toLowerCase().includes(searchTerm))
+  );
 
-  state.cart = [];
-  updateCart();
-  renderItems();
-  elements.checkoutModal.style.display = 'none';
-  tg.showAlert("Заказ оформлен! С вами свяжутся для подтверждения.");
+  if (filteredItems.length === 0) {
+    elements.itemsContainer.innerHTML = `
+      <div class="no-results">
+        <p>Товары по запросу "${searchTerm}" не найдены</p>
+        <button onclick="renderItems()" class="retry-btn">Показать все товары</button>
+      </div>
+    `;
+    return;
+  }
+
+  elements.itemsContainer.innerHTML = filteredItems.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
+        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
+                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
+                ${isInCart(item) ? 'disabled' : ''}>
+          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        </button>
+      </div>
+    </div>
+  `).join('');
 }
 
-function formatOrderMessage(order) {
-  return `
-    <b>Новый заказ!</b>
-    <b>Клиент:</b> ${order.name}
-    <b>Телефон:</b> ${order.phone}
-    <b>Telegram:</b> ${order.telegram || 'не указан'}
-    <b>Способ оплаты:</b> ${order.payment === 'card' ? 'Карта' : 'Криптовалюта'}
-    <b>Доставка:</b> ${order.delivery === 'delivery' ? 'Доставка (+440 ₽)' : 'Самовывоз'}
-    ${order.delivery === 'delivery' ? `<b>Адрес:</b> ${order.address}` : ''}
-    <b>Товары:</b>
-    ${order.cart.map(item => `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`).join('\n')}
-    <b>Итого:</b> ${order.total}
-  `;
-}
-
-function setupEventListeners() {
-  elements.cartBtn.addEventListener('click', () => {
-    renderCart();
-    elements.cartModal.style.display = 'block';
-  });
-
-  elements.closeCart.addEventListener('click', () => {
-    elements.cartModal.style.display = 'none';
-  });
-
-  elements.checkoutBtn.addEventListener('click', showCheckoutForm);
-  elements.closeCheckout.addEventListener('click', () => {
-    elements.checkoutModal.style.display = 'none';
-    elements.cartModal.style.display = 'block';
-  });
-  elements.backToCartBtn.addEventListener('click', () => {
-    elements.checkoutModal.style.display = 'none';
-    elements.cartModal.style.display = 'block';
-  });
-  elements.confirmOrderBtn.addEventListener('click', submitOrder);
-  elements.deliveryMethod.addEventListener('change', () => {
-    const deliveryCost = elements.deliveryMethod.value === 'delivery' ? state.deliveryCost : 0;
-    elements.deliveryCostDisplay.textContent = `${deliveryCost} ₽`;
-    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-    elements.totalToPay.textContent = `${total + deliveryCost} ₽`;
-  });
-}
-
-document.addEventListener('DOMContentLoaded', init);
+// Глобальные функции
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
+
+// Запуск
+document.addEventListener('DOMContentLoaded', init);

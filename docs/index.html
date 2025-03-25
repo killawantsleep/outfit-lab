@@ -1,61 +1,148 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <!-- Meta-теры и стили остаются без изменений -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OUTFIT LAB | Premium Fashion</title>
+  <meta name="description" content="Магазин премиальной одежды">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f0f12">
+  <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json"> 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  
+  <style>
+    /* Инлайн стили для первоначальной загрузки */
+    body {
+      background-color: #0f0f12;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #0f0f12;
+      z-index: 1000;
+    }
+    .splash-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      background: linear-gradient(45deg, #6c5ce7, #00cec9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    .splash-loader {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(108, 92, 231, 0.3);
+      border-top: 4px solid #6c5ce7;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
+  <!-- Splash Screen -->
   <div class="splash-screen" id="splashScreen">
     <div class="splash-logo">OUTFIT LAB</div>
     <div class="splash-loader"></div>
   </div>
 
+  <!-- Основное приложение -->
   <div class="app-wrapper" id="appWrapper" style="display: none;">
-    <!-- Основной интерфейс -->
-    <main class="content-area">
-      <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Найти товары..." class="search-input">
-        <button id="searchBtn" class="search-button">Поиск</button>
+    <header class="main-header">
+      <div class="logo-container">
+        <h1 class="logo-text">OUTFIT LAB</h1>
+        <p class="logo-subtext">Premium Fashion</p>
       </div>
-      <div id="itemsContainer" class="items-grid"></div>
+    </header>
+
+    <main class="content-area">
+      <div id="errorContainer" class="error-container" style="display: none;"></div>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Найти кроссовки, футболки..." 
+          class="search-input"
+          aria-label="Поиск товаров"
+        >
+        <button id="searchBtn" class="search-button" aria-label="Найти">Поиск</button>
+      </div>
+      
+      <div id="itemsContainer" class="items-grid" role="list"></div>
+      
+      <div id="loadingIndicator" class="loading-indicator">
+        <div class="loader"></div>
+        <p>Загрузка товаров...</p>
+      </div>
     </main>
 
-    <!-- Кнопка корзины (всегда видна) -->
-    <button id="cartBtn" class="cart-btn">
+    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
       <span class="cart-icon">🛍</span>
       <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter">0</span>
+      <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
     </button>
 
-    <!-- Модальное окно корзины -->
-    <div id="cartModal" class="modal">
+    <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Ваша корзина</h2>
-          <button id="closeCart" class="close-btn">&times;</button>
+          <h2 id="cartModalTitle">Ваша корзина</h2>
+          <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
         </div>
-        <div id="cartItems" class="cart-items-list"></div>
+        <div id="cartItems" class="cart-items-list" role="list"></div>
         <div class="cart-footer">
           <div class="total-price">
             <span>Итого:</span>
-            <span id="cartTotal">0 ₽</span>
+            <span id="cartTotal" aria-live="polite">0 ₽</span>
           </div>
           <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
         </div>
       </div>
     </div>
-
-    <!-- Модальное окно оформления заказа -->
-    <div id="checkoutModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Оформление заказа</h2>
-          <button id="closeCheckout" class="close-btn">&times;</button>
-        </div>
-        <!-- Форма заказа -->
-      </div>
-    </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appWrapper');
+        
+        if (splash) splash.style.display = 'none';
+        if (app) app.style.display = 'block';
+        
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('Service Worker зарегистрирован'))
+            .catch(err => console.error('Ошибка Service Worker:', err));
+        }
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
