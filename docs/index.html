@@ -75,10 +75,6 @@
     <main class="content-area">
       <div id="errorContainer" class="error-container" style="display: none;"></div>
       <div id="itemsContainer" class="items-grid"></div>
-      <div id="loadingIndicator" class="loading-indicator">
-        <div class="loader"></div>
-        <p>Загрузка товаров...</p>
-      </div>
     </main>
 
     <button id="cartBtn" class="cart-btn">
@@ -103,9 +99,14 @@
         </div>
       </div>
     </div>
+
+    <div id="loadingIndicator" class="loading-indicator">
+      <div class="loader"></div>
+      <p>Загрузка товаров...</p>
+    </div>
   </div>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
   <script>
     // Инициализация приложения после загрузки
     document.addEventListener('DOMContentLoaded', function() {
