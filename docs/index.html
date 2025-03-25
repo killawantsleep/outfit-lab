@@ -64,19 +64,25 @@
   </div>
 
   <!-- Основное приложение -->
-  <div class="app-wrapper" id="appWrapper" style="display: none;">
-    <header class="main-header">
-      <div class="logo-container">
-        <h1 class="logo-text">OUTFIT LAB</h1>
-        <p class="logo-subtext">Premium Fashion</p>
-      </div>
-    </header>
+<div class="app-wrapper" id="appWrapper" style="display: none;">
+  <header class="main-header">
+    <div class="logo-container">
+      <h1 class="logo-text">OUTFIT LAB</h1>
+      <p class="logo-subtext">Premium Fashion</p>
+    </div>
+  </header>
 
-    <main class="content-area">
-      <div id="errorContainer" class="error-container" style="display: none;"></div>
-      <div id="itemsContainer" class="items-grid"></div>
-    </main>
+  <main class="content-area">
+    <div id="errorContainer" class="error-container" style="display: none;"></div>
+    <div id="itemsContainer" class="items-grid"></div>
+    <div id="loadingIndicator" class="loading-indicator">
+      <div class="loader"></div>
+      <p>Загрузка товаров...</p>
+    </div>
+  </main>
 
+  <!-- Остальной код остается без изменений -->
+</div>
     <button id="cartBtn" class="cart-btn">
       <span class="cart-icon">🛍</span>
       <span class="cart-text">Корзина</span>
@@ -125,4 +131,4 @@
     });
   </script>
 </body>
-</html>
+</html> 
