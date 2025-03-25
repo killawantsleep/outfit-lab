@@ -101,97 +101,26 @@
         <p>Загрузка товаров...</p>
       </div>
     </main>
-  </div>
 
-  <!-- Кнопка корзины (вне основного контейнера) -->
-  <button id="cartBtn" class="cart-btn" aria-label="Корзина" style="display: none;">
-    <span class="cart-icon">🛍</span>
-    <span class="cart-text">Корзина</span>
-    <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
-  </button>
+    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
+      <span class="cart-icon">🛍</span>
+      <span class="cart-text">Корзина</span>
+      <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
+    </button>
 
-  <!-- Модальное окно корзины -->
-  <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="cartModalTitle">Ваша корзина</h2>
-        <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
-      </div>
-      <div id="cartItems" class="cart-items-list" role="list"></div>
-      <div class="cart-footer">
-        <div class="total-price">
-          <span>Итого:</span>
-          <span id="cartTotal" aria-live="polite">0 ₽</span>
+    <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="cartModalTitle">Ваша корзина</h2>
+          <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
         </div>
-        <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модальное окно оформления заказа -->
-  <div id="checkoutModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="checkoutModalTitle">Оформление заказа</h2>
-        <button id="closeCheckout" class="close-btn" aria-label="Закрыть">&times;</button>
-      </div>
-      
-      <div class="checkout-form">
-        <div class="form-section">
-          <h3>Оплата:</h3>
-          <select id="paymentMethod" class="form-select">
-            <option value="card">Перевод на карту</option>
-            <option value="crypto">Оплата криптовалютой</option>
-          </select>
-        </div>
-        
-        <div class="form-section">
-          <h3>Доставка:</h3>
-          <select id="deliveryMethod" class="form-select">
-            <option value="delivery">Доставка (+440 ₽)</option>
-            <option value="pickup">Самовывоз (бесплатно)</option>
-          </select>
-          <p class="form-hint">Для уточнения адреса самовывоза с вами свяжется администратор.</p>
-        </div>
-        
-        <div class="form-section">
-          <h3>Контактный телефон <span class="required">*</span>:</h3>
-          <input type="tel" id="phoneInput" class="form-input" placeholder="+7 (XXX) XXX-XX-XX" required>
-        </div>
-        
-        <div id="addressSection" class="form-section">
-          <h3>Адрес доставки <span class="required">*</span>:</h3>
-          <input type="text" id="addressInput" class="form-input" placeholder="Город, улица, дом, квартира">
-        </div>
-        
-        <div class="form-section">
-          <h3>ФИО <span class="required">*</span>:</h3>
-          <input type="text" id="nameInput" class="form-input" placeholder="Иванов Иван Иванович" required>
-        </div>
-        
-        <div class="form-section">
-          <h3>Ваш Телеграм:</h3>
-          <input type="text" id="telegramInput" class="form-input" placeholder="@username">
-        </div>
-        
-        <div class="order-summary">
-          <div class="summary-row">
-            <span>Товары:</span>
-            <span id="cartTotalCheckout">0 ₽</span>
+        <div id="cartItems" class="cart-items-list" role="list"></div>
+        <div class="cart-footer">
+          <div class="total-price">
+            <span>Итого:</span>
+            <span id="cartTotal" aria-live="polite">0 ₽</span>
           </div>
-          <div class="summary-row">
-            <span>Доставка:</span>
-            <span id="deliveryCost">440 ₽</span>
-          </div>
-          <div class="summary-row total">
-            <span>К оплате:</span>
-            <span id="totalToPay">0 ₽</span>
-          </div>
-        </div>
-        
-        <div class="form-actions">
-          <button id="backToCartBtn" class="secondary-btn">Назад в корзину</button>
-          <button id="confirmOrderBtn" class="primary-btn">Подтвердить заказ</button>
+          <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
         </div>
       </div>
     </div>
@@ -202,7 +131,10 @@
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(function() {
         const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appWrapper');
+        
         if (splash) splash.style.display = 'none';
+        if (app) app.style.display = 'block';
         
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('service-worker.js')
