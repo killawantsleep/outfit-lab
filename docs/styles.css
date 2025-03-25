@@ -670,6 +670,99 @@ body {
   transform: translateX(-50%);
   z-index: 1000; /* Важно! */
 }
+/* ===== Кнопка корзины ===== */
+.cart-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  justify-content: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  /* Новые свойства для защиты от перекрытия */
+  pointer-events: auto !important;
+  will-change: transform;
+}
+
+/* Контейнер товаров с фиксированной высотой и скроллом */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+  max-height: calc(100vh - 250px); /* Оставляем место для кнопки */
+  overflow-y: auto;
+  padding-bottom: 80px; /* Защитное отступление */
+}
+
+/* Кастомный скроллбар */
+.items-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* Модальное окно корзины */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 2000; /* Выше всех элементов */
+  display: none;
+  backdrop-filter: blur(5px);
+}
+
+/* Адаптация для ПК */
+@media (min-width: 769px) {
+  .items-grid {
+    max-height: calc(100vh - 200px);
+    padding-right: 15px;
+  }
+  
+  .cart-btn {
+    bottom: 30px;
+  }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .items-grid {
+    max-height: calc(100vh - 220px);
+    padding-bottom: 100px;
+  }
+  
+  .cart-btn {
+    bottom: 20px;
+    width: calc(100% - 40px);
+    left: 20px;
+    transform: none;
+  }
+}
+
 /* Адаптация для десктопов */
 @media (min-width: 769px) {
   .search-container {

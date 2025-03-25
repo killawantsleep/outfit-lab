@@ -42,6 +42,23 @@ const elements = {
   searchInput: document.getElementById('searchInput'),
   searchBtn: document.getElementById('searchBtn')
 };
+// В начале файла после определения элементов
+console.log('Проверка элементов:', {
+  cartBtn: elements.cartBtn ? 'Найден' : 'Не найден',
+  cartModal: elements.cartModal ? 'Найден' : 'Не найден'
+});
+
+// В функции init() добавьте:
+function init() {
+  loadItems();
+  setupEventListeners();
+  updateCart();
+  
+  // Защита от перекрытия кнопки
+  document.addEventListener('scroll', function() {
+    elements.cartBtn.style.transform = 'translateX(-50%)';
+  });
+}
 
 // Проверка элементов
 console.log('Elements initialized:', Object.keys(elements).filter(key => elements[key]));
