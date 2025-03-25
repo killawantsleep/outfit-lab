@@ -38,7 +38,9 @@ const elements = {
   cartTotal: document.getElementById('cartTotal'),
   closeCart: document.getElementById('closeCart'),
   checkoutBtn: document.getElementById('checkoutBtn'),
-  loadingIndicator: document.getElementById('loadingIndicator')
+  loadingIndicator: document.getElementById('loadingIndicator'),
+  searchInput: document.getElementById('searchInput'),
+searchBtn: document.getElementById('searchBtn')
 };
 
 function init() {
@@ -150,38 +152,107 @@ function removeFromCart(index) {
   renderItems();
 }
 
+// ... (остальной код остается без изменений)
+
 function setupEventListeners() {
   const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
-  elements.cartBtn.addEventListener(clickEvent, (e) => {
-    e.preventDefault();
-    renderCart();
-    elements.cartModal.style.display = 'block';
-  });
-  
-  elements.closeCart.addEventListener(clickEvent, () => {
-    elements.cartModal.style.display = 'none';
-  });
-  
-  elements.checkoutBtn.addEventListener(clickEvent, () => {
-    if (state.cart.length === 0) return;
-    
-    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-    const orderText = state.cart.map(item => 
-      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
-    ).join('\n');
-    
-    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
-    
-    state.cart = [];
-    updateCart();
-    renderItems();
-    elements.cartModal.style.display = 'none';
-  });
+  // Проверка элементов перед добавлением обработчиков
+  if (elements.cartBtn) {
+    elements.cartBtn.addEventListener(clickEvent, (e) => {
+      e.preventDefault();
+      renderCart();
+      elements.cartModal.style.display = 'block';
+    });
+  }
+
+  if (elements.closeCart) {
+    elements.closeCart.addEventListener(clickEvent, () => {
+      elements.cartModal.style.display = 'none';
+    });
+  }
+
+  if (elements.checkoutBtn) {
+    elements.checkoutBtn.addEventListener(clickEvent, () => {
+      if (state.cart.length === 0) return;
+      
+      const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+      const orderText = state.cart.map(item => 
+        `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
+      ).join('\n');
+      
+      tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+      
+      state.cart = [];
+      updateCart();
+      renderItems();
+      elements.cartModal.style.display = 'none';
+    });
+  }
+
+  if (elements.searchBtn && elements.searchInput) {
+    elements.searchBtn.addEventListener('click', searchItems);
+    elements.searchInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') searchItems();
+    });
+    elements.searchInput.addEventListener('input', (e) => {
+      if (e.target.value.trim() === '') renderItems();
+    });
+  }
+}
+
+// Новая вспомогательная функция
+function escapeHtml(unsafe) {
+  return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
 }
 
 function showLoading(show) {
   elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+function searchItems() {
+  if (!state.items.length) {
+    tg.showAlert("Товары ещё не загружены");
+    return;
+  }
+
+  const searchTerm = elements.searchInput.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    renderItems();
+    return;
+  }
+
+  const filteredItems = state.items.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) || 
+    (item.size && item.size.toLowerCase().includes(searchTerm))
+  );
+
+  if (filteredItems.length === 0) {
+    elements.itemsContainer.innerHTML = `
+      <div class="no-results">
+        <p>Товары по запросу "${searchTerm}" не найдены</p>
+        <button onclick="renderItems()" class="retry-btn">Показать все товары</button>
+      </div>
+    `;
+    return;
+  }
+
+  elements.itemsContainer.innerHTML = filteredItems.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
+        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
+                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
+                ${isInCart(item) ? 'disabled' : ''}>
+          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        </button>
+      </div>
+    </div>
+  `).join('');
 }
 
 // Глобальные функции
