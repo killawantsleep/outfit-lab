@@ -90,32 +90,39 @@ function renderItems() {
   `).join('');
 }
 
-function addToCart(name, price, size) {
-  const itemElement = event.target.closest('.item');
-  const item = { 
-    name, 
-    price, 
-    size, 
-    image: itemElement.querySelector('img').src 
-  };
+function setupEventListeners() {
+  // Определяем тип события в зависимости от устройства
+  const clickEvent = ('ontouchstart' in window) ? 'touchend' : 'click';
   
-  if (isInCart(item)) {
-    tg.showAlert(`"${item.name}" уже в корзине!`);
-    return;
-  }
-
-  state.cart.push(item);
-  updateCart();
+  // Обработчик для кнопки корзины
+  elements.cartBtn.addEventListener(clickEvent, (e) => {
+    e.preventDefault(); // Предотвращаем стандартное поведение
+    e.stopPropagation(); // Останавливаем всплытие события
+    renderCart();
+    elements.cartModal.style.display = 'block';
+  });
   
-  // Мгновенное обновление кнопки
-  const button = event.target;
-  button.textContent = '✓ В корзине';
-  button.classList.add('in-cart');
-  button.disabled = true;
+  // Обработчик для закрытия корзины
+  elements.closeCart.addEventListener(clickEvent, () => {
+    elements.cartModal.style.display = 'none';
+  });
   
-  // Анимация и уведомление
-  button.style.animation = 'pulse 0.5s';
-  tg.showAlert(`"${item.name}" добавлен в корзину!`);
+  // Обработчик для оформления заказа
+  elements.checkoutBtn.addEventListener(clickEvent, () => {
+    if (state.cart.length === 0) return;
+    
+    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+    const orderText = state.cart.map(item => 
+      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
+    ).join('\n');
+    
+    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+    
+    state.cart = [];
+    updateCart();
+    renderItems(); // Обновляем кнопки товаров
+    elements.cartModal.style.display = 'none';
+  });
 }
 
 function isInCart(item) {
