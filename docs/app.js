@@ -81,13 +81,17 @@ function renderItems() {
         <p>${item.price} ₽</p>
         <p>Размер: ${item.size || 'не указан'}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
+                onclick="addToCart('${escapeString(item.name)}', ${item.price}, '${escapeString(item.size || '')}')"
                 ${isInCart(item) ? 'disabled' : ''}>
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
     </div>
   `).join('');
+}
+
+function escapeString(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
 function addToCart(name, price, size) {
@@ -108,10 +112,13 @@ function addToCart(name, price, size) {
   updateCart();
   
   // Обновляем все кнопки для этого товара
-  document.querySelectorAll(`.item:has(h3:contains("${name}")) .buy-button`).forEach(btn => {
-    btn.textContent = '✓ В корзине';
-    btn.classList.add('in-cart');
-    btn.disabled = true;
+  document.querySelectorAll('.item').forEach(el => {
+    if (el.querySelector('h3').textContent === name) {
+      const btn = el.querySelector('.buy-button');
+      btn.textContent = '✓ В корзине';
+      btn.classList.add('in-cart');
+      btn.disabled = true;
+    }
   });
   
   tg.showAlert(`"${item.name}" добавлен в корзину`);
@@ -147,10 +154,20 @@ function renderCart() {
 }
 
 function removeFromCart(index) {
+  const removedItem = state.cart[index];
   state.cart.splice(index, 1);
   updateCart();
   renderCart();
-  renderItems();
+  
+  // Обновляем кнопки для удаленного товара
+  document.querySelectorAll('.item').forEach(el => {
+    if (el.querySelector('h3').textContent === removedItem.name) {
+      const btn = el.querySelector('.buy-button');
+      btn.textContent = 'В корзину';
+      btn.classList.remove('in-cart');
+      btn.disabled = false;
+    }
+  });
 }
 
 function setupEventListeners() {
@@ -172,6 +189,18 @@ function setupEventListeners() {
     ).join('\n');
     
     tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+    
+    // Очищаем корзину и обновляем кнопки
+    state.cart.forEach(item => {
+      document.querySelectorAll('.item').forEach(el => {
+        if (el.querySelector('h3').textContent === item.name) {
+          const btn = el.querySelector('.buy-button');
+          btn.textContent = 'В корзину';
+          btn.classList.remove('in-cart');
+          btn.disabled = false;
+        }
+      });
+    });
     
     state.cart = [];
     updateCart();

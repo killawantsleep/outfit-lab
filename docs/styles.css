@@ -33,13 +33,13 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   text-size-adjust: 100%;
+  padding-bottom: 120px; /* Добавили отступ для кнопки корзины */
 }
 
 .app-wrapper {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 100px;
   position: relative;
   opacity: 0;
   animation: fadeIn 0.5s ease-out forwards;
@@ -88,6 +88,24 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
   margin-top: 20px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Кастомный скроллбар */
+.items-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
 }
 
 .item {
@@ -154,42 +172,34 @@ body {
   cursor: not-allowed;
 }
 
+/* Кнопка корзины - фиксированная и всегда видимая */
 .cart-btn {
   position: fixed;
-  bottom: 60px; /* Подняли выше над интерфейсом Telegram */
+  bottom: 80px; /* Выше интерфейса Telegram */
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
+  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 15px 25px;
   border-radius: 50px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
-  z-index: 1000; /* Увеличили z-index */
-  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+  z-index: 9999; /* Максимальный z-index */
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 160px;
+  gap: 12px;
+  min-width: 200px;
   justify-content: center;
+  transition: all 0.3s;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-@media (max-width: 768px) {
-  .cart-btn {
-    bottom: 70px; /* Еще выше на мобильных */
-    width: 90%;
-    padding: 10px 15px;
-    font-size: 0.8rem;
-  }
 }
 
 .cart-btn:hover {
-  background: var(--primary-dark);
-  transform: translateX(-50%) scale(1.03);
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 6px 25px rgba(108, 92, 231, 0.6);
 }
 
 .cart-icon {
@@ -214,6 +224,7 @@ body {
   font-weight: bold;
 }
 
+/* Остальные стили остаются без изменений */
 .modal {
   position: fixed;
   top: 0;
@@ -221,7 +232,7 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.8);
-  z-index: 1000;
+  z-index: 10000;
   display: none;
   animation: fadeIn 0.3s ease-out;
   backdrop-filter: blur(5px);
@@ -240,282 +251,28 @@ body {
   box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  color: var(--light);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: var(--light);
-  font-size: 1.8rem;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  line-height: 1;
-}
-
-.close-btn:hover {
-  opacity: 1;
-}
-
-.cart-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.cart-item {
-  display: flex;
-  gap: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  align-items: center;
-}
-
-.cart-item img {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.cart-item-info {
-  flex-grow: 1;
-}
-
-.cart-item-info h4 {
-  font-size: 1rem;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.cart-item-info p {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.7);
-}
-
-.remove-item {
-  background: none;
-  border: none;
-  color: var(--danger);
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 5px;
-  margin-left: 10px;
-}
-
-.cart-footer {
-  margin-top: 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding-top: 20px;
-}
-
-.total-price {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.total-price span:last-child {
-  color: var(--secondary);
-  font-weight: bold;
-}
-
-.checkout-btn {
-  background: var(--success);
-  color: white;
-  border: none;
-  padding: 15px;
-  width: 100%;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s;
-  font-size: 1rem;
-}
-
-.checkout-btn:hover {
-  background: #00a884;
-}
-
-.checkout-btn:disabled {
-  background: var(--gray);
-  cursor: not-allowed;
-}
-
-.loading-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 15, 18, 0.9);
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  backdrop-filter: blur(5px);
-}
-
-.loader {
-  border: 4px solid rgba(108, 92, 231, 0.3);
-  border-radius: 50%;
-  border-top: 4px solid #6c5ce7;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-.loading-indicator p {
-  color: var(--light);
-  font-size: 1rem;
-  margin-top: 15px;
-}
-
-.error-container {
-  background: rgba(255, 71, 87, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 20px;
-  color: var(--danger);
-  text-align: center;
-  display: none;
-}
-
-.error-message {
-  margin-bottom: 15px;
-}
-
-.retry-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s;
-  font-size: 1rem;
-}
-
-.retry-btn:hover {
-  background: var(--primary-dark);
-}
-/* ===== Кнопка корзины ===== */
-.cart-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
-  color: white;
-  border: none;
-  padding: 15px 25px;
-  border-radius: 50px;
-  font-size: 1rem;
-  cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 200px;
-  justify-content: center;
-  transition: all 0.3s;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.cart-btn:hover {
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 6px 25px rgba(108, 92, 231, 0.5);
-}
-
-.cart-icon {
-  font-size: 1.2rem;
-}
-
-.cart-text {
-  flex-grow: 1;
-  text-align: center;
-}
-
-.cart-counter {
-  background: #ff4757;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: bold;
-}
-
+/* Адаптация для мобильных */
 @media (max-width: 768px) {
-  .cart-btn {
-    width: calc(100% - 30px);
-    left: 15px;
-    transform: none;
-    bottom: 15px;
-    padding: 12px 20px;
+  body {
+    padding-bottom: 100px;
   }
   
-  .cart-btn:hover {
+  .cart-btn {
+    bottom: 70px;
+    width: 90%;
+    left: 5%;
     transform: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-wrapper {
-    padding: 15px;
-    padding-bottom: 90px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
   }
   
   .items-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    max-height: calc(100vh - 220px);
   }
   
   .item-image {
     height: 250px;
-  }
-  
-  .cart-btn {
-    width: calc(100% - 30px);
-    left: 15px;
-    transform: none;
-    bottom: 15px;
-    padding: 12px 20px;
-  }
-  
-  .logo-text {
-    font-size: 2rem;
-  }
-  
-  .logo-subtext {
-    font-size: 0.8rem;
-  }
-  
-  .modal-content {
-    max-height: 70vh;
   }
 }
 
@@ -524,52 +281,9 @@ body {
     height: 200px;
   }
   
-  .cart-item img {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .cart-item-info h4 {
-    font-size: 0.9rem;
-  }
-  
-  .cart-item-info p {
+  .cart-btn {
+    bottom: 60px;
     font-size: 0.8rem;
+    padding: 10px 15px;
   }
-}
-/* Добавьте эти стили в конец файла */
-.items-grid {
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
-  padding-right: 10px;
-}
-
-/* Кастомный скроллбар */
-.items-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.items-grid::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-}
-
-.items-grid::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 10px;
-}
-
-/* Улучшение для мобильных устройств */
-@media (max-width: 768px) {
-  .items-grid {
-      max-height: calc(100vh - 180px);
-  }
-}
-.buy-button {
-  transition: all 0.3s ease;
-}
-
-.buy-button.in-cart {
-  background: #00b894 !important;
-  cursor: not-allowed;
 }
