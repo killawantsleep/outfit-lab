@@ -56,7 +56,7 @@ async function loadItems() {
   showLoading(true);
 
   try {
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    const response = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
     const data = await response.json();
     
     if (!Array.isArray(data)) throw new Error("Invalid data format");
@@ -188,4 +188,4 @@ window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 
 // Запуск
-document.addEventListener('DOMC
+document.addEventListener('DOMContentLoaded', init);
