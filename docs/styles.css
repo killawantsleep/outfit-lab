@@ -39,7 +39,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 100px;
+  padding-bottom: 180px; /* Увеличенный отступ для кнопки */
   position: relative;
   opacity: 0;
   animation: fadeIn 0.5s ease-out forwards;
@@ -83,11 +83,85 @@ body {
   font-weight: 500;
 }
 
+/* ===== Кнопка корзины ===== */
+.cart-btn {
+  position: fixed !important;
+  bottom: 30px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: linear-gradient(45deg, #6c5ce7, #9c88ff) !important;
+  color: white !important;
+  border: none !important;
+  padding: 15px 25px !important;
+  border-radius: 50px !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  z-index: 10000 !important; /* Максимальный приоритет */
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 200px !important;
+  justify-content: center !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  will-change: transform !important;
+  animation: float 3s ease-in-out infinite !important;
+  pointer-events: auto !important;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateX(-50%) translateY(0) !important; }
+  50% { transform: translateX(-50%) translateY(-5px) !important; }
+}
+
+.cart-icon {
+  font-size: 1.2rem !important;
+}
+
+.cart-text {
+  flex-grow: 1 !important;
+  text-align: center !important;
+}
+
+.cart-counter {
+  background: #ff4757 !important;
+  color: white !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.9rem !important;
+  font-weight: bold !important;
+}
+
+/* ===== Контейнер товаров ===== */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
   margin-top: 20px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-bottom: 120px; /* Защитный отступ */
+  z-index: 1; /* Ниже кнопки корзины */
+}
+
+.items-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
 }
 
 .item {
@@ -96,6 +170,8 @@ body {
   overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
   will-change: transform;
+  position: relative;
+  z-index: 1; /* Ниже кнопки корзины */
 }
 
 .item:hover {
@@ -150,70 +226,11 @@ body {
 }
 
 .buy-button.in-cart {
-  background: var(--success);
+  background: #00b894 !important;
   cursor: not-allowed;
 }
 
-.cart-btn {
-  position: fixed;
-  bottom: 60px; /* Подняли выше над интерфейсом Telegram */
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  z-index: 1000; /* Увеличили z-index */
-  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 160px;
-  justify-content: center;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-@media (max-width: 768px) {
-  .cart-btn {
-    bottom: 70px; /* Еще выше на мобильных */
-    width: 90%;
-    padding: 10px 15px;
-    font-size: 0.8rem;
-  }
-}
-
-.cart-btn:hover {
-  background: var(--primary-dark);
-  transform: translateX(-50%) scale(1.03);
-}
-
-.cart-icon {
-  font-size: 1.2rem;
-}
-
-.cart-text {
-  flex-grow: 1;
-  text-align: center;
-}
-
-.cart-counter {
-  background: var(--danger);
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: bold;
-}
-
+/* ===== Модальное окно корзины ===== */
 .modal {
   position: fixed;
   top: 0;
@@ -221,7 +238,7 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(0,0,0,0.8);
-  z-index: 1000;
+  z-index: 20000; /* Выше всего */
   display: none;
   animation: fadeIn 0.3s ease-out;
   backdrop-filter: blur(5px);
@@ -789,5 +806,50 @@ body {
   
   .search-button {
     min-width: 80px;
+  }
+}
+@media (max-width: 768px) {
+  .app-wrapper {
+    padding: 15px;
+    padding-bottom: 160px;
+  }
+  
+  .items-grid {
+    max-height: calc(100vh - 220px);
+    grid-template-columns: 1fr;
+    padding-bottom: 140px;
+  }
+  
+  .cart-btn {
+    width: calc(100% - 40px) !important;
+    left: 20px !important;
+    transform: none !important;
+    bottom: 25px !important;
+    padding: 12px 20px !important;
+    animation: none !important;
+  }
+  
+  .logo-text {
+    font-size: 2rem;
+  }
+  
+  .logo-subtext {
+    font-size: 0.8rem;
+  }
+  
+  .modal-content {
+    max-height: 70vh;
+  }
+}
+
+/* Адаптация для ПК */
+@media (min-width: 769px) {
+  .items-grid {
+    max-height: calc(100vh - 200px);
+    padding-right: 15px;
+  }
+  
+  .cart-btn {
+    bottom: 40px !important;
   }
 }
