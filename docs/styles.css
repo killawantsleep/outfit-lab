@@ -460,3 +460,124 @@ body {
     font-size: 0.8rem;
   }
 }
+
+/* Дополнительные стили для совместимости */
+.telegram-button {
+  display: none !important;
+}
+
+.tg-button {
+  visibility: hidden;
+}
+
+.tg-footer {
+  opacity: 0;
+  height: 0;
+}
+
+.tg-back-button {
+  pointer-events: none;
+}
+
+.tg-header {
+  z-index: -1;
+}
+
+.tg-main-button {
+  display: none !important;
+}
+
+/* Фикс для Safari */
+@supports (-webkit-touch-callout: none) {
+  body {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Анимации */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+/* Дополнительные элементы */
+.hidden-element {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Фикс для Firefox */
+@-moz-document url-prefix() {
+  .items-grid {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) rgba(255,255,255,0.1);
+  }
+}
+
+/* Фикс для IE11 */
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .items-grid {
+    display: -ms-grid;
+    -ms-grid-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* Дополнительные ховер-эффекты */
+.buy-button:active {
+  transform: scale(0.98);
+}
+
+.cart-btn:active {
+  transform: translateX(-50%) scale(0.98);
+}
+
+/* Дополнительные медиа-запросы */
+@media (max-height: 600px) {
+  .item-image {
+    height: 200px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .main-header {
+    padding: 10px 0;
+    margin-bottom: 15px;
+  }
+  
+  .item-info {
+    padding: 10px;
+  }
+}
+
+/* Дополнительные утилиты */
+.no-scroll {
+  overflow: hidden !important;
+}
+
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
