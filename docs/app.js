@@ -43,12 +43,6 @@ const elements = {
   loadingIndicator: document.getElementById('loadingIndicator')
 };
 
-function init() {
-  loadItems();
-  setupEventListeners();
-  updateCart();
-}
-
 async function loadItems() {
   if (state.isLoading) return;
   
@@ -56,16 +50,38 @@ async function loadItems() {
   showLoading(true);
 
   try {
+    console.log('Пытаюсь загрузить товары из:', CONFIG.SCRIPT_URL);
     const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
-    const data = await response.json();
     
-    if (!Array.isArray(data)) throw new Error("Invalid data format");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('Получены данные:', data);
+    
+    if (!Array.isArray(data)) {
+      throw new Error("Данные не являются массивом");
+    }
     
     state.items = data.filter(item => item?.name && !isNaN(item.price));
+    console.log('Отфильтрованные товары:', state.items);
+    
+    if (state.items.length === 0) {
+      console.warn('Нет товаров после фильтрации');
+    }
+    
     renderItems();
   } catch (error) {
-    console.error('Load error:', error);
-    tg.showAlert("Ошибка загрузки товаров");
+    console.error('Ошибка загрузки:', error);
+    tg.showAlert("Ошибка загрузки товаров. Проверьте консоль для деталей.");
+    
+    // Показываем кнопку повтора
+    elements.errorContainer.style.display = 'block';
+    elements.errorContainer.innerHTML = `
+      <div class="error-message">Не удалось загрузить товары</div>
+      <button class="retry-btn" onclick="loadItems()">Повторить попытку</button>
+    `;
   } finally {
     state.isLoading = false;
     showLoading(false);
