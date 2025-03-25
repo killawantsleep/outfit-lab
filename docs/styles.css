@@ -156,24 +156,35 @@ body {
 
 .cart-btn {
   position: fixed;
-  bottom: 20px;
+  bottom: 60px; /* Подняли выше над интерфейсом Telegram */
   left: 50%;
   transform: translateX(-50%);
-  background: var(--primary);
+  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
   color: white;
   border: none;
-  padding: 15px 25px;
+  padding: 12px 20px;
   border-radius: 50px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+  z-index: 1000; /* Увеличили z-index */
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 200px;
+  gap: 8px;
+  min-width: 160px;
   justify-content: center;
-  transition: all 0.3s;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .cart-btn {
+    bottom: 70px; /* Еще выше на мобильных */
+    width: 90%;
+    padding: 10px 15px;
+    font-size: 0.8rem;
+  }
 }
 
 .cart-btn:hover {
@@ -405,6 +416,72 @@ body {
 .retry-btn:hover {
   background: var(--primary-dark);
 }
+/* ===== Кнопка корзины ===== */
+.cart-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  justify-content: center;
+  transition: all 0.3s;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cart-btn:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 6px 25px rgba(108, 92, 231, 0.5);
+}
+
+.cart-icon {
+  font-size: 1.2rem;
+}
+
+.cart-text {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.cart-counter {
+  background: #ff4757;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .cart-btn {
+    width: calc(100% - 30px);
+    left: 15px;
+    transform: none;
+    bottom: 15px;
+    padding: 12px 20px;
+  }
+  
+  .cart-btn:hover {
+    transform: none;
+  }
+}
 
 @media (max-width: 768px) {
   .app-wrapper {
@@ -459,4 +536,40 @@ body {
   .cart-item-info p {
     font-size: 0.8rem;
   }
+}
+/* Добавьте эти стили в конец файла */
+.items-grid {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Кастомный скроллбар */
+.items-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.items-grid::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.items-grid::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+/* Улучшение для мобильных устройств */
+@media (max-width: 768px) {
+  .items-grid {
+      max-height: calc(100vh - 180px);
+  }
+}
+.buy-button {
+  transition: all 0.3s ease;
+}
+
+.buy-button.in-cart {
+  background: #00b894 !important;
+  cursor: not-allowed;
 }
