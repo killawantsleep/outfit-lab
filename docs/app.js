@@ -21,8 +21,6 @@ if (!window.Telegram?.WebApp?.initData) {
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
-
-// Скрываем стандартную кнопку корзины Telegram
 tg.MainButton.hide();
 
 const state = {
@@ -90,39 +88,30 @@ function renderItems() {
   `).join('');
 }
 
-function setupEventListeners() {
-  // Определяем тип события в зависимости от устройства
-  const clickEvent = ('ontouchstart' in window) ? 'touchend' : 'click';
+function addToCart(name, price, size) {
+  const itemElement = event.target.closest('.item');
+  const item = { 
+    name, 
+    price, 
+    size, 
+    image: itemElement.querySelector('img').src 
+  };
   
-  // Обработчик для кнопки корзины
-  elements.cartBtn.addEventListener(clickEvent, (e) => {
-    e.preventDefault(); // Предотвращаем стандартное поведение
-    e.stopPropagation(); // Останавливаем всплытие события
-    renderCart();
-    elements.cartModal.style.display = 'block';
-  });
+  if (isInCart(item)) {
+    tg.showAlert(`"${item.name}" уже в корзине!`);
+    return;
+  }
+
+  state.cart.push(item);
+  updateCart();
   
-  // Обработчик для закрытия корзины
-  elements.closeCart.addEventListener(clickEvent, () => {
-    elements.cartModal.style.display = 'none';
-  });
+  // Обновляем кнопку
+  const button = event.target;
+  button.textContent = '✓ В корзине';
+  button.classList.add('in-cart');
+  button.disabled = true;
   
-  // Обработчик для оформления заказа
-  elements.checkoutBtn.addEventListener(clickEvent, () => {
-    if (state.cart.length === 0) return;
-    
-    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-    const orderText = state.cart.map(item => 
-      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
-    ).join('\n');
-    
-    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
-    
-    state.cart = [];
-    updateCart();
-    renderItems(); // Обновляем кнопки товаров
-    elements.cartModal.style.display = 'none';
-  });
+  tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
 function isInCart(item) {
@@ -138,22 +127,20 @@ function updateCart() {
   elements.cartCounter.textContent = state.cart.length;
 }
 
-function renderItems() {
-  elements.itemsContainer.innerHTML = state.items.map(item => `
-    <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image">
-      <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
-                ${isInCart(item) ? 'disabled' : ''}>
-          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
-        </button>
+function renderCart() {
+  elements.cartItems.innerHTML = state.cart.map((item, index) => `
+    <div class="cart-item">
+      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
+      <div>
+        <h4>${item.name}</h4>
+        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
       </div>
+      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
+
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  elements.cartTotal.textContent = `${total} ₽`;
 }
 
 function removeFromCart(index) {
@@ -164,16 +151,19 @@ function removeFromCart(index) {
 }
 
 function setupEventListeners() {
-  elements.cartBtn.addEventListener('click', () => {
+  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
+  
+  elements.cartBtn.addEventListener(clickEvent, (e) => {
+    e.preventDefault();
     renderCart();
     elements.cartModal.style.display = 'block';
   });
   
-  elements.closeCart.addEventListener('click', () => {
+  elements.closeCart.addEventListener(clickEvent, () => {
     elements.cartModal.style.display = 'none';
   });
   
-  elements.checkoutBtn.addEventListener('click', () => {
+  elements.checkoutBtn.addEventListener(clickEvent, () => {
     if (state.cart.length === 0) return;
     
     const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
@@ -185,6 +175,7 @@ function setupEventListeners() {
     
     state.cart = [];
     updateCart();
+    renderItems();
     elements.cartModal.style.display = 'none';
   });
 }
