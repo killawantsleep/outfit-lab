@@ -662,6 +662,14 @@ body {
   transform: translateY(-1px);
 }
 
+/* Гарантируем, что кнопка корзины всегда поверх других элементов */
+.cart-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000; /* Важно! */
+}
 /* Адаптация для десктопов */
 @media (min-width: 769px) {
   .search-container {
