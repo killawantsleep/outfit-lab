@@ -107,14 +107,15 @@ function addToCart(name, price, size) {
   state.cart.push(item);
   updateCart();
   
-  // Обновляем все кнопки для этого товара
-  document.querySelectorAll(`.item:has(h3:contains("${name}")) .buy-button`).forEach(btn => {
-    btn.textContent = '✓ В корзине';
-    btn.classList.add('in-cart');
-    btn.disabled = true;
-  });
+  // Мгновенное обновление кнопки
+  const button = event.target;
+  button.textContent = '✓ В корзине';
+  button.classList.add('in-cart');
+  button.disabled = true;
   
-  tg.showAlert(`"${item.name}" добавлен в корзину`);
+  // Анимация и уведомление
+  button.style.animation = 'pulse 0.5s';
+  tg.showAlert(`"${item.name}" добавлен в корзину!`);
 }
 
 function isInCart(item) {
@@ -130,20 +131,22 @@ function updateCart() {
   elements.cartCounter.textContent = state.cart.length;
 }
 
-function renderCart() {
-  elements.cartItems.innerHTML = state.cart.map((item, index) => `
-    <div class="cart-item">
-      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
-      <div>
-        <h4>${item.name}</h4>
-        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
+function renderItems() {
+  elements.itemsContainer.innerHTML = state.items.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
+        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
+                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
+                ${isInCart(item) ? 'disabled' : ''}>
+          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        </button>
       </div>
-      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
-
-  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  elements.cartTotal.textContent = `${total} ₽`;
 }
 
 function removeFromCart(index) {
