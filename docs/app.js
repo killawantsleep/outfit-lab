@@ -40,8 +40,11 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-searchBtn: document.getElementById('searchBtn')
+  searchBtn: document.getElementById('searchBtn')
 };
+
+// Проверка элементов
+console.log('Elements initialized:', Object.keys(elements).filter(key => elements[key]));
 
 function init() {
   loadItems();
@@ -107,7 +110,6 @@ function addToCart(name, price, size) {
   state.cart.push(item);
   updateCart();
   
-  // Обновляем кнопку
   const button = event.target;
   button.textContent = '✓ В корзине';
   button.classList.add('in-cart');
@@ -152,26 +154,27 @@ function removeFromCart(index) {
   renderItems();
 }
 
-// ... (остальной код остается без изменений)
-
 function setupEventListeners() {
   const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
-  // Проверка элементов перед добавлением обработчиков
+  // Кнопка корзины
   if (elements.cartBtn) {
     elements.cartBtn.addEventListener(clickEvent, (e) => {
       e.preventDefault();
       renderCart();
       elements.cartModal.style.display = 'block';
+      console.log('Cart opened');
     });
   }
 
+  // Закрытие корзины
   if (elements.closeCart) {
     elements.closeCart.addEventListener(clickEvent, () => {
       elements.cartModal.style.display = 'none';
     });
   }
 
+  // Оформление заказа
   if (elements.checkoutBtn) {
     elements.checkoutBtn.addEventListener(clickEvent, () => {
       if (state.cart.length === 0) return;
@@ -190,6 +193,7 @@ function setupEventListeners() {
     });
   }
 
+  // Поиск
   if (elements.searchBtn && elements.searchInput) {
     elements.searchBtn.addEventListener('click', searchItems);
     elements.searchInput.addEventListener('keyup', (e) => {
@@ -201,7 +205,6 @@ function setupEventListeners() {
   }
 }
 
-// Новая вспомогательная функция
 function escapeHtml(unsafe) {
   return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
 }
