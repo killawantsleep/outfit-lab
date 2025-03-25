@@ -1,8 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 10000,
-  BOT_TOKEN: '7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA',
-  ADMIN_ID: 5000931101
+  TIMEOUT: 10000
 };
 
 // Проверка на открытие в Telegram WebApp
@@ -50,8 +48,7 @@ const elements = {
   checkoutDelivery: document.getElementById('checkoutDelivery'),
   checkoutTotal: document.getElementById('checkoutTotal'),
   orderSuccessModal: document.getElementById('orderSuccessModal'),
-  closeSuccess: document.getElementById('closeSuccess'),
-  errorContainer: document.getElementById('errorContainer')
+  closeSuccess: document.getElementById('closeSuccess')
 };
 
 function init() {
@@ -294,15 +291,12 @@ ${orderData.items.map(item => `• ${escapeHtml(item.name)} - ${item.price} ₽ 
   `;
   
   try {
-    // Пытаемся отправить через WebApp
     tg.sendData(JSON.stringify({
       type: 'new_order',
       order: orderText
     }));
-    
-    return true;
   } catch (error) {
-    console.error('Ошибка отправки через WebApp:', error);
+    console.error('Ошибка отправки заказа:', error);
     throw error;
   }
 }

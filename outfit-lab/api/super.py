@@ -34,14 +34,18 @@ def add_item(message):
     if message.from_user.id not in ADMINS:
         return bot.reply_to(message, "❌ Только для админов")
 
-    msg = bot.send_message(
-        message.chat.id,
-        "📤 Отправьте фото товара с подписью в формате:\n"
-        "<b>Название | Цена | Размер</b>\n\n"
-        "Пример: <i>Футболка премиум | 1990 | XL</i>",
-        parse_mode="HTML"
-    )
-    bot.register_next_step_handler(msg, process_item)
+    try:
+        msg = bot.send_message(
+            message.chat.id,
+            "📤 Отправьте фото товара с подписью в формате:\n"
+            "<b>Название | Цена | Размер</b>\n\n"
+            "Пример: <i>Футболка премиум | 1990 | XL</i>",
+            parse_mode="HTML"
+        )
+        bot.register_next_step_handler(msg, process_item)
+    except Exception as e:
+        print(f"Ошибка в команде /additem: {str(e)}")
+        bot.reply_to(message, "❌ Произошла ошибка, попробуйте снова")
 
 def process_item(message):
     try:
@@ -110,9 +114,7 @@ def handle_web_app_data(message):
             bot.send_message(
                 message.chat.id,
                 "✅ Ваш заказ успешно оформлен!\n"
-                "Мы свяжемся с вами в ближайшее время для подтверждения.\n\n"
-                "ℹ️ Информация о заказе:\n"
-                f"{data['order']}",
+                "Мы свяжемся с вами в ближайшее время для подтверждения.",
                 parse_mode='HTML',
                 reply_markup=InlineKeyboardMarkup().add(
                     InlineKeyboardButton(
@@ -120,16 +122,13 @@ def handle_web_app_data(message):
                         web_app=WebAppInfo(url=WEB_APP_URL))
                 )
             )
-            
-            # Очищаем сообщение с кнопкой "Оформить заказ"
-            try:
-                bot.delete_message(message.chat.id, message.message_id)
-            except:
-                pass
     except Exception as e:
         print(f"Ошибка обработки web_app_data: {str(e)}")
-        bot.send_message(message.chat.id, "⚠️ Произошла ошибка при обработке заказа")
+        bot.send_message(message.chat.id, "⚠️ Произошла ошибка при оформлении заказа")
 
 if __name__ == '__main__':
     print("Бот запущен...")
-    bot.infinity_polling()
+    try:
+        bot.infinity_polling()
+    except Exception as e:
+        print(f"Ошибка в работе бота: {str(e)}")
