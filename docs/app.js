@@ -91,7 +91,13 @@ function renderItems() {
 }
 
 function addToCart(name, price, size) {
-  const item = { name, price, size, image: event.target.closest('.item').querySelector('img').src };
+  const itemElement = event.target.closest('.item');
+  const item = { 
+    name, 
+    price, 
+    size, 
+    image: itemElement.querySelector('img').src 
+  };
   
   if (isInCart(item)) {
     tg.showAlert(`"${item.name}" уже в корзине!`);
@@ -100,11 +106,13 @@ function addToCart(name, price, size) {
 
   state.cart.push(item);
   updateCart();
-  renderItems();
   
-  event.target.textContent = '✓ В корзине';
-  event.target.classList.add('in-cart');
-  event.target.disabled = true;
+  // Обновляем все кнопки для этого товара
+  document.querySelectorAll(`.item:has(h3:contains("${name}")) .buy-button`).forEach(btn => {
+    btn.textContent = '✓ В корзине';
+    btn.classList.add('in-cart');
+    btn.disabled = true;
+  });
   
   tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
