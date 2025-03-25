@@ -154,29 +154,6 @@ body {
   cursor: not-allowed;
 }
 
-.cart-btn {
-  position: fixed;
-  bottom: 60px; /* Подняли выше над интерфейсом Telegram */
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  z-index: 1000; /* Увеличили z-index */
-  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 160px;
-  justify-content: center;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
 
 @media (max-width: 768px) {
   .cart-btn {
@@ -429,7 +406,7 @@ body {
   border-radius: 50px;
   font-size: 1rem;
   cursor: pointer;
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
   display: flex;
   align-items: center;
