@@ -4,12 +4,7 @@ const CONFIG = {
 };
 
 // Проверка на открытие в Telegram WebApp
-if (window.Telegram?.WebApp?.initData) {
-  const tg = window.Telegram.WebApp;
-  tg.expand();
-  tg.enableClosingConfirmation();
-} else {
-  // Если открыто не в Telegram, показываем сообщение
+if (!window.Telegram?.WebApp?.initData) {
   document.body.innerHTML = `
     <div style="padding:40px;text-align:center;">
       <h2>Откройте приложение через Telegram</h2>
@@ -24,13 +19,18 @@ if (window.Telegram?.WebApp?.initData) {
 }
 
 const tg = window.Telegram.WebApp;
+tg.expand();
+tg.enableClosingConfirmation();
+
+// Скрываем стандартную кнопку корзины Telegram
+tg.MainButton.hide();
+
 const state = {
   items: [],
   cart: JSON.parse(localStorage.getItem('cart')) || [],
   isLoading: false
 };
 
-// Остальной код остается без изменений...
 const elements = {
   itemsContainer: document.getElementById('itemsContainer'),
   cartBtn: document.getElementById('cartBtn'),
@@ -120,15 +120,6 @@ function isInCart(item) {
 function updateCart() {
   localStorage.setItem('cart', JSON.stringify(state.cart));
   elements.cartCounter.textContent = state.cart.length;
-  
-  if (tg.MainButton) {
-    if (state.cart.length > 0) {
-      tg.MainButton.setText(`Корзина (${state.cart.length})`);
-      tg.MainButton.show();
-    } else {
-      tg.MainButton.hide();
-    }
-  }
 }
 
 function renderCart() {
