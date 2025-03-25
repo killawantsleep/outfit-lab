@@ -9,7 +9,7 @@ if (!window.Telegram?.WebApp?.initData) {
     <div style="padding:40px;text-align:center;">
       <h2>Откройте приложение через Telegram</h2>
       <p>Это мини-приложение работает только внутри Telegram</p>
-      <button onclick="window.location.href='https://t.me/your_bot'" 
+      <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
               style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
         Открыть в Telegram
       </button>
