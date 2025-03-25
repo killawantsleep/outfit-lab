@@ -50,38 +50,18 @@ async function loadItems() {
   showLoading(true);
 
   try {
-    console.log('Пытаюсь загрузить товары из:', CONFIG.SCRIPT_URL);
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('Получены данные:', data);
-    
-    if (!Array.isArray(data)) {
-      throw new Error("Данные не являются массивом");
-    }
-    
-    state.items = data.filter(item => item?.name && !isNaN(item.price));
-    console.log('Отфильтрованные товары:', state.items);
-    
-    if (state.items.length === 0) {
-      console.warn('Нет товаров после фильтрации');
-    }
+    // Временные тестовые данные
+    state.items = [{
+      name: "Пример товара",
+      price: 1990,
+      image: "https://via.placeholder.com/300",
+      size: "M"
+    }];
     
     renderItems();
   } catch (error) {
-    console.error('Ошибка загрузки:', error);
-    tg.showAlert("Ошибка загрузки товаров. Проверьте консоль для деталей.");
-    
-    // Показываем кнопку повтора
-    elements.errorContainer.style.display = 'block';
-    elements.errorContainer.innerHTML = `
-      <div class="error-message">Не удалось загрузить товары</div>
-      <button class="retry-btn" onclick="loadItems()">Повторить попытку</button>
-    `;
+    console.error('Load error:', error);
+    tg.showAlert("Ошибка загрузки товаров");
   } finally {
     state.isLoading = false;
     showLoading(false);
