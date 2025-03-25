@@ -1,4 +1,5 @@
 import os
+import json
 import telebot
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
@@ -8,7 +9,7 @@ load_dotenv()
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
 ADMINS = [5000931101]  # Ваш ID
-WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"  # Ваш GitHub Pages URL
+WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -91,6 +92,43 @@ def process_item(message):
     except Exception as e:
         bot.reply_to(message, str(e))
         print(f"Ошибка добавления товара: {str(e)}")
+
+@bot.message_handler(content_types=['web_app_data'])
+def handle_web_app_data(message):
+    try:
+        data = json.loads(message.web_app_data.data)
+        
+        if data.get('type') == 'new_order':
+            # Отправляем заказ админу
+            bot.send_message(
+                ADMINS[0],
+                data['order'],
+                parse_mode='HTML'
+            )
+            
+            # Подтверждаем пользователю
+            bot.send_message(
+                message.chat.id,
+                "✅ Ваш заказ успешно оформлен!\n"
+                "Мы свяжемся с вами в ближайшее время для подтверждения.\n\n"
+                "ℹ️ Информация о заказе:\n"
+                f"{data['order']}",
+                parse_mode='HTML',
+                reply_markup=InlineKeyboardMarkup().add(
+                    InlineKeyboardButton(
+                        "🛍️ Вернуться в магазин", 
+                        web_app=WebAppInfo(url=WEB_APP_URL))
+                )
+            )
+            
+            # Очищаем сообщение с кнопкой "Оформить заказ"
+            try:
+                bot.delete_message(message.chat.id, message.message_id)
+            except:
+                pass
+    except Exception as e:
+        print(f"Ошибка обработки web_app_data: {str(e)}")
+        bot.send_message(message.chat.id, "⚠️ Произошла ошибка при обработке заказа")
 
 if __name__ == '__main__':
     print("Бот запущен...")

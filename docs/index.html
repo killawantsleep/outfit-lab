@@ -7,18 +7,26 @@
   <meta name="description" content="Магазин премиальной одежды">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f0f12">
+  <meta name="format-detection" content="telephone=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@700&display=swap">
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json"> 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  
   <style>
     /* Инлайн стили для первоначальной загрузки */
     body {
       background-color: #0f0f12;
       overflow: hidden;
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
     }
     .splash-screen {
       position: fixed;
@@ -64,73 +72,70 @@
   </div>
 
   <!-- Основное приложение -->
-<div class="app-wrapper" id="appWrapper" style="display: none;">
-  <header class="main-header">
-    <div class="logo-container">
-      <h1 class="logo-text">OUTFIT LAB</h1>
-      <p class="logo-subtext">Premium Fashion</p>
-    </div>
-  </header>
+  <div class="app-wrapper" id="appWrapper" style="display: none;">
+    <header class="main-header">
+      <div class="logo-container">
+        <h1 class="logo-text">OUTFIT LAB</h1>
+        <p class="logo-subtext">Premium Fashion</p>
+      </div>
+    </header>
 
-  <main class="content-area">
-    <div id="errorContainer" class="error-container" style="display: none;"></div>
-    <div class="search-container">
-      <input 
-        type="text" 
-        id="searchInput" 
-        placeholder="Найти кроссовки, футболки..." 
-        class="search-input"
-      >
-      <button id="searchBtn" class="search-button">Поиск</button>
-    </div>
-    <div id="itemsContainer" class="items-grid"></div>
-    <div id="loadingIndicator" class="loading-indicator">
-      <div class="loader"></div>
-      <p>Загрузка товаров...</p>
-    </div>
-  </main>
+    <main class="content-area">
+      <div id="errorContainer" class="error-container" style="display: none;"></div>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Найти кроссовки, футболки..." 
+          class="search-input"
+          aria-label="Поиск товаров"
+        >
+        <button id="searchBtn" class="search-button" aria-label="Найти">Поиск</button>
+      </div>
+      
+      <div id="itemsContainer" class="items-grid" role="list"></div>
+      
+      <div id="loadingIndicator" class="loading-indicator">
+        <div class="loader"></div>
+        <p>Загрузка товаров...</p>
+      </div>
+    </main>
 
-  <!-- Остальной код остается без изменений -->
-</div>
-    <button id="cartBtn" class="cart-btn">
+    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
       <span class="cart-icon">🛍</span>
       <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter">0</span>
+      <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
     </button>
 
-    <div id="cartModal" class="modal">
+    <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Ваша корзина</h2>
-          <button id="closeCart" class="close-btn">&times;</button>
+          <h2 id="cartModalTitle">Ваша корзина</h2>
+          <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
         </div>
-        <div id="cartItems" class="cart-items-list"></div>
+        <div id="cartItems" class="cart-items-list" role="list"></div>
         <div class="cart-footer">
           <div class="total-price">
             <span>Итого:</span>
-            <span id="cartTotal">0 ₽</span>
+            <span id="cartTotal" aria-live="polite">0 ₽</span>
           </div>
           <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
         </div>
       </div>
     </div>
-
-    <div id="loadingIndicator" class="loading-indicator">
-      <div class="loader"></div>
-      <p>Загрузка товаров...</p>
-    </div>
   </div>
 
-<script src="app.js"></script>
+  <script src="app.js" defer></script>
   <script>
-    // Инициализация приложения после загрузки
     document.addEventListener('DOMContentLoaded', function() {
-      // Скрываем splash screen и показываем приложение
       setTimeout(function() {
-        document.getElementById('splashScreen').style.display = 'none';
-        document.getElementById('appWrapper').style.display = 'block';
+        const splash = document.getElementById('splashScreen');
+        const app = document.getElementById('appWrapper');
         
-        // Инициализация Service Worker
+        if (splash) splash.style.display = 'none';
+        if (app) app.style.display = 'block';
+        
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('service-worker.js')
             .then(reg => console.log('Service Worker зарегистрирован'))
@@ -139,5 +144,92 @@
       }, 1000);
     });
   </script>
+  <div id="checkoutModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+    <div class="modal-content checkout-content">
+      <div class="modal-header">
+        <h2 id="checkoutModalTitle">Оформление заказа</h2>
+        <button id="closeCheckout" class="close-btn" aria-label="Закрыть">&times;</button>
+      </div>
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-section">
+          <h3>Способ оплаты</h3>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="payment" value="card" checked>
+              <span class="radio-custom"></span>
+              <span>Перевод на карту</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="payment" value="crypto">
+              <span class="radio-custom"></span>
+              <span>Оплата криптовалютой</span>
+            </label>
+          </div>
+        </div>
+  
+        <div class="form-section">
+          <h3>Способ доставки</h3>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="delivery" value="delivery" checked>
+              <span class="radio-custom"></span>
+              <span>Доставка (+440 ₽)</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="delivery" value="pickup">
+              <span class="radio-custom"></span>
+              <span>Самовывоз (бесплатно)</span>
+            </label>
+          </div>
+        </div>
+  
+        <div class="form-section">
+          <h3>Контактные данные</h3>
+          <div class="input-group">
+            <label for="phone">Телефон*</label>
+            <input type="tel" id="phone" name="phone" placeholder="+7XXXXXXXXXX" required>
+          </div>
+          <div class="input-group">
+            <label for="address">Адрес доставки*</label>
+            <input type="text" id="address" name="address" placeholder="Город, улица, дом, квартира" required>
+          </div>
+          <div class="input-group">
+            <label for="name">ФИО*</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          <div class="input-group">
+            <label for="telegram">Ваш Telegram</label>
+            <input type="text" id="telegram" name="telegram" placeholder="@username">
+          </div>
+        </div>
+  
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Товары:</span>
+            <span id="checkoutItemsTotal">0 ₽</span>
+          </div>
+          <div class="summary-row">
+            <span>Доставка:</span>
+            <span id="checkoutDelivery">440 ₽</span>
+          </div>
+          <div class="summary-row total">
+            <span>К оплате:</span>
+            <span id="checkoutTotal">0 ₽</span>
+          </div>
+        </div>
+  
+        <button type="submit" class="submit-order-btn">Подтвердить заказ</button>
+      </form>
+    </div>
+  </div>
+  
+  <div id="orderSuccessModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content success-content">
+      <div class="success-icon">✓</div>
+      <h2>Спасибо за заказ!</h2>
+      <p>Ваш заказ успешно оформлен. Мы свяжемся с вами в ближайшее время.</p>
+      <button id="closeSuccess" class="success-close-btn">Закрыть</button>
+    </div>
+  </div>
 </body>
-</html> 
+</html>
