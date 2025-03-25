@@ -88,6 +88,10 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
   margin-top: 20px;
+  max-height: calc(100vh - 250px); /* Добавлено */
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 80px; /* Добавлено */
 }
 
 .item {
@@ -539,7 +543,8 @@ body {
 /* Улучшение для мобильных устройств */
 @media (max-width: 768px) {
   .items-grid {
-      max-height: calc(100vh - 180px);
+    max-height: calc(100vh - 220px); /* Корректируем для мобилок */
+    margin-bottom: 70px;
   }
 }
 .buy-button {
