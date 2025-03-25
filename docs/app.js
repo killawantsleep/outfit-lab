@@ -26,7 +26,8 @@ tg.MainButton.hide();
 const state = {
   items: [],
   cart: JSON.parse(localStorage.getItem('cart')) || [],
-  isLoading: false
+  isLoading: false,
+  deliveryCost: 440
 };
 
 const elements = {
@@ -43,12 +44,16 @@ const elements = {
   searchBtn: document.getElementById('searchBtn'),
   checkoutModal: document.getElementById('checkoutModal'),
   closeCheckout: document.getElementById('closeCheckout'),
-  checkoutForm: document.getElementById('checkoutForm'),
-  checkoutItemsTotal: document.getElementById('checkoutItemsTotal'),
-  checkoutDelivery: document.getElementById('checkoutDelivery'),
-  checkoutTotal: document.getElementById('checkoutTotal'),
-  orderSuccessModal: document.getElementById('orderSuccessModal'),
-  closeSuccess: document.getElementById('closeSuccess')
+  paymentMethod: document.getElementById('paymentMethod'),
+  deliveryMethod: document.getElementById('deliveryMethod'),
+  phoneInput: document.getElementById('phoneInput'),
+  addressInput: document.getElementById('addressInput'),
+  nameInput: document.getElementById('nameInput'),
+  telegramInput: document.getElementById('telegramInput'),
+  deliveryCostDisplay: document.getElementById('deliveryCost'),
+  totalToPay: document.getElementById('totalToPay'),
+  confirmOrderBtn: document.getElementById('confirmOrderBtn'),
+  backToCartBtn: document.getElementById('backToCartBtn')
 };
 
 function init() {
@@ -73,7 +78,7 @@ async function loadItems() {
     renderItems();
   } catch (error) {
     console.error('Load error:', error);
-    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
+    tg.showAlert("Ошибка загрузки товаров");
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -115,6 +120,7 @@ function addToCart(name, price, size) {
   state.cart.push(item);
   updateCart();
   
+  // Обновляем кнопку
   const button = event.target;
   button.textContent = '✓ В корзине';
   button.classList.add('in-cart');
@@ -159,6 +165,81 @@ function removeFromCart(index) {
   renderItems();
 }
 
+function showCheckoutForm() {
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const deliveryCost = elements.deliveryMethod.value === 'delivery' ? state.deliveryCost : 0;
+  const totalToPay = total + deliveryCost;
+  
+  elements.deliveryCostDisplay.textContent = `${deliveryCost} ₽`;
+  elements.totalToPay.textContent = `${totalToPay} ₽`;
+  
+  elements.cartModal.style.display = 'none';
+  elements.checkoutModal.style.display = 'block';
+}
+
+function submitOrder() {
+  const paymentMethod = elements.paymentMethod.value;
+  const deliveryMethod = elements.deliveryMethod.value;
+  const phone = elements.phoneInput.value.trim();
+  const address = elements.addressInput.value.trim();
+  const name = elements.nameInput.value.trim();
+  const telegram = elements.telegramInput.value.trim();
+  
+  if (!phone || !name) {
+    tg.showAlert("Пожалуйста, заполните обязательные поля (телефон и ФИО)");
+    return;
+  }
+  
+  const deliveryCost = deliveryMethod === 'delivery' ? state.deliveryCost : 0;
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const totalToPay = total + deliveryCost;
+  
+  const orderDetails = state.cart.map(item => 
+    `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
+  ).join('\n');
+  
+  const message = `
+    <b>Новый заказ!</b>
+    
+    <b>Клиент:</b> ${escapeHtml(name)}
+    <b>Телефон:</b> ${escapeHtml(phone)}
+    <b>Telegram:</b> ${telegram ? escapeHtml(telegram) : 'не указан'}
+    
+    <b>Способ оплаты:</b> ${paymentMethod === 'card' ? 'Перевод на карту' : 'Криптовалюта'}
+    <b>Доставка:</b> ${deliveryMethod === 'delivery' ? 'Доставка (+440 ₽)' : 'Самовывоз'}
+    ${deliveryMethod === 'delivery' ? `<b>Адрес:</b> ${escapeHtml(address)}` : ''}
+    
+    <b>Заказ:</b>
+    ${orderDetails}
+    
+    <b>Итого:</b> ${total} ₽
+    <b>Доставка:</b> ${deliveryCost} ₽
+    <b>К оплате:</b> ${totalToPay} ₽
+  `;
+  
+  tg.sendData(JSON.stringify({
+    action: 'new_order',
+    order: message
+  }));
+  
+  state.cart = [];
+  updateCart();
+  renderItems();
+  elements.checkoutModal.style.display = 'none';
+  elements.cartModal.style.display = 'none';
+  
+  tg.showAlert("Ваш заказ успешно оформлен! С вами свяжутся для подтверждения.");
+}
+
+function updateOrderSummary() {
+  const deliveryCost = elements.deliveryMethod.value === 'delivery' ? state.deliveryCost : 0;
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const totalToPay = total + deliveryCost;
+  
+  elements.deliveryCostDisplay.textContent = `${deliveryCost} ₽`;
+  elements.totalToPay.textContent = `${totalToPay} ₽`;
+}
+
 function setupEventListeners() {
   const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
@@ -177,75 +258,36 @@ function setupEventListeners() {
     });
   }
 
-  // Оформление заказа
   if (elements.checkoutBtn) {
     elements.checkoutBtn.addEventListener(clickEvent, () => {
       if (state.cart.length === 0) return;
-      
-      const itemsTotal = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-      const delivery = 440;
-      const total = itemsTotal + delivery;
-      
-      elements.checkoutItemsTotal.textContent = `${itemsTotal} ₽`;
-      elements.checkoutDelivery.textContent = `${delivery} ₽`;
-      elements.checkoutTotal.textContent = `${total} ₽`;
-      
-      elements.cartModal.style.display = 'none';
-      elements.checkoutModal.style.display = 'block';
+      showCheckoutForm();
     });
   }
-  
+
+  // Оформление заказа
   if (elements.closeCheckout) {
     elements.closeCheckout.addEventListener(clickEvent, () => {
       elements.checkoutModal.style.display = 'none';
+      elements.cartModal.style.display = 'block';
     });
   }
-  
-  if (elements.closeSuccess) {
-    elements.closeSuccess.addEventListener(clickEvent, () => {
-      elements.orderSuccessModal.style.display = 'none';
+
+  if (elements.backToCartBtn) {
+    elements.backToCartBtn.addEventListener(clickEvent, () => {
+      elements.checkoutModal.style.display = 'none';
+      elements.cartModal.style.display = 'block';
     });
   }
-  
-  // Форма заказа
-  if (elements.checkoutForm) {
-    elements.checkoutForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const formData = new FormData(elements.checkoutForm);
-      const itemsTotal = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-      const deliveryCost = formData.get('delivery') === 'delivery' ? 440 : 0;
-      const total = itemsTotal + deliveryCost;
-      
-      const orderData = {
-        payment: formData.get('payment'),
-        delivery: formData.get('delivery'),
-        phone: formData.get('phone'),
-        address: formData.get('address'),
-        name: formData.get('name'),
-        telegram: formData.get('telegram'),
-        items: state.cart,
-        itemsTotal: itemsTotal,
-        deliveryCost: deliveryCost,
-        total: total
-      };
-      
-      try {
-        await sendOrderToBot(orderData);
-        
-        elements.checkoutModal.style.display = 'none';
-        elements.orderSuccessModal.style.display = 'block';
-        
-        state.cart = [];
-        updateCart();
-        renderItems();
-      } catch (error) {
-        console.error('Ошибка отправки заказа:', error);
-        tg.showAlert('Ошибка оформления заказа. Попробуйте позже.');
-      }
-    });
+
+  if (elements.confirmOrderBtn) {
+    elements.confirmOrderBtn.addEventListener(clickEvent, submitOrder);
   }
-  
+
+  if (elements.deliveryMethod) {
+    elements.deliveryMethod.addEventListener('change', updateOrderSummary);
+  }
+
   // Поиск
   if (elements.searchBtn && elements.searchInput) {
     elements.searchBtn.addEventListener('click', searchItems);
@@ -256,49 +298,14 @@ function setupEventListeners() {
       if (e.target.value.trim() === '') renderItems();
     });
   }
-  
-  // Обновление стоимости доставки
-  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-      const deliveryCost = this.value === 'delivery' ? 440 : 0;
-      const itemsTotal = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-      const total = itemsTotal + deliveryCost;
-      
-      elements.checkoutDelivery.textContent = this.value === 'delivery' ? '440 ₽' : 'Бесплатно';
-      elements.checkoutTotal.textContent = `${total} ₽`;
-    });
-  });
 }
 
-async function sendOrderToBot(orderData) {
-  const orderText = `
-📦 <b>НОВЫЙ ЗАКАЗ</b>
+function escapeHtml(unsafe) {
+  return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
+}
 
-👤 <b>Клиент:</b> ${escapeHtml(orderData.name)}
-📞 <b>Телефон:</b> ${escapeHtml(orderData.phone)}
-📱 <b>Telegram:</b> ${orderData.telegram ? escapeHtml(orderData.telegram) : 'не указан'}
-📍 <b>Адрес:</b> ${escapeHtml(orderData.address)}
-
-💳 <b>Способ оплаты:</b> ${orderData.payment === 'card' ? 'Перевод на карту' : 'Криптовалюта'}
-🚚 <b>Доставка:</b> ${orderData.delivery === 'delivery' ? 'Доставка (+440 ₽)' : 'Самовывоз'}
-
-🛒 <b>Товары (${orderData.items.length}):</b>
-${orderData.items.map(item => `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`).join('\n')}
-
-💰 <b>Итого:</b> ${orderData.itemsTotal} ₽
-🚚 <b>Доставка:</b> ${orderData.deliveryCost} ₽
-💵 <b>К оплате:</b> ${orderData.total} ₽
-  `;
-  
-  try {
-    tg.sendData(JSON.stringify({
-      type: 'new_order',
-      order: orderText
-    }));
-  } catch (error) {
-    console.error('Ошибка отправки заказа:', error);
-    throw error;
-  }
+function showLoading(show) {
+  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
 }
 
 function searchItems() {
@@ -346,26 +353,10 @@ function searchItems() {
   `).join('');
 }
 
-function showLoading(show) {
-  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
-}
-
-function showError(message) {
-  elements.errorContainer.innerHTML = `
-    <div class="error-message">${message}</div>
-    <button class="retry-btn" onclick="loadItems()">Попробовать снова</button>
-  `;
-  elements.errorContainer.style.display = 'block';
-}
-
-function escapeHtml(unsafe) {
-  return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
-}
-
 // Глобальные функции
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
-window.renderItems = renderItems;
+window.updateOrderSummary = updateOrderSummary;
 
 // Запуск
 document.addEventListener('DOMContentLoaded', init);

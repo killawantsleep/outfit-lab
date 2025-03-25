@@ -9,7 +9,7 @@ load_dotenv()
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL")
 ADMINS = [5000931101]  # Ваш ID
-WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
+WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"  # Ваш GitHub Pages URL
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -34,18 +34,14 @@ def add_item(message):
     if message.from_user.id not in ADMINS:
         return bot.reply_to(message, "❌ Только для админов")
 
-    try:
-        msg = bot.send_message(
-            message.chat.id,
-            "📤 Отправьте фото товара с подписью в формате:\n"
-            "<b>Название | Цена | Размер</b>\n\n"
-            "Пример: <i>Футболка премиум | 1990 | XL</i>",
-            parse_mode="HTML"
-        )
-        bot.register_next_step_handler(msg, process_item)
-    except Exception as e:
-        print(f"Ошибка в команде /additem: {str(e)}")
-        bot.reply_to(message, "❌ Произошла ошибка, попробуйте снова")
+    msg = bot.send_message(
+        message.chat.id,
+        "📤 Отправьте фото товара с подписью в формате:\n"
+        "<b>Название | Цена | Размер</b>\n\n"
+        "Пример: <i>Футболка премиум | 1990 | XL</i>",
+        parse_mode="HTML"
+    )
+    bot.register_next_step_handler(msg, process_item)
 
 def process_item(message):
     try:
@@ -100,35 +96,27 @@ def process_item(message):
 @bot.message_handler(content_types=['web_app_data'])
 def handle_web_app_data(message):
     try:
-        data = json.loads(message.web_app_data.data)
+        data = message.web_app_data.data
+        order_data = json.loads(data)
         
-        if data.get('type') == 'new_order':
-            # Отправляем заказ админу
-            bot.send_message(
-                ADMINS[0],
-                data['order'],
+        if order_data.get('action') == 'new_order':
+            # Отправляем заказ админам
+            for admin_id in ADMINS:
+                bot.send_message(
+                    admin_id,
+                    order_data['order'],
+                    parse_mode='HTML'
+                )
+            
+            bot.reply_to(
+                message,
+                "✅ Ваш заказ успешно принят! Мы свяжемся с вами в ближайшее время.",
                 parse_mode='HTML'
             )
-            
-            # Подтверждаем пользователю
-            bot.send_message(
-                message.chat.id,
-                "✅ Ваш заказ успешно оформлен!\n"
-                "Мы свяжемся с вами в ближайшее время для подтверждения.",
-                parse_mode='HTML',
-                reply_markup=InlineKeyboardMarkup().add(
-                    InlineKeyboardButton(
-                        "🛍️ Вернуться в магазин", 
-                        web_app=WebAppInfo(url=WEB_APP_URL))
-                )
-            )
     except Exception as e:
-        print(f"Ошибка обработки web_app_data: {str(e)}")
-        bot.send_message(message.chat.id, "⚠️ Произошла ошибка при оформлении заказа")
+        print(f"Ошибка обработки заказа: {str(e)}")
+        bot.reply_to(message, "❌ Произошла ошибка при обработке заказа. Пожалуйста, попробуйте еще раз.")
 
 if __name__ == '__main__':
     print("Бот запущен...")
-    try:
-        bot.infinity_polling()
-    except Exception as e:
-        print(f"Ошибка в работе бота: {str(e)}")
+    bot.infinity_polling()
