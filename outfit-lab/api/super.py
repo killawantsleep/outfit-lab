@@ -25,7 +25,7 @@ def start(message):
         )
     except Exception as e:
         print(f"Ошибка в команде /start: {str(e)}")
-        bot.reply_to(message, "Произошла ошибка. Попробуйте позже.")
+        bot.reply_to(message, "👋 Добро пожаловать в OUTFIT LAB!\nТовары обновляются автоматически.")
 
 @bot.message_handler(commands=['additem'])
 def add_item(message):

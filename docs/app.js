@@ -1,151 +1,184 @@
-// Конфигурация
 const CONFIG = {
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-    TIMEOUT: 10000 // 10 секунд
-  };
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
+  TIMEOUT: 10000
+};
+
+if (!window.Telegram?.WebApp?.initData) {
+  document.body.innerHTML = `
+    <div style="padding:40px;text-align:center;">
+      <h2>Откройте приложение через Telegram</h2>
+      <p>Это мини-приложение работает только внутри Telegram</p>
+    </div>
+  `;
+  throw new Error("Telegram WebApp not initialized");
+}
+
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.enableClosingConfirmation();
+
+const state = {
+  items: [],
+  cart: JSON.parse(localStorage.getItem('cart')) || [],
+  isLoading: false
+};
+
+const elements = {
+  itemsContainer: document.getElementById('itemsContainer'),
+  cartBtn: document.getElementById('cartBtn'),
+  cartCounter: document.getElementById('cartCounter'),
+  cartModal: document.getElementById('cartModal'),
+  cartItems: document.getElementById('cartItems'),
+  cartTotal: document.getElementById('cartTotal'),
+  closeCart: document.getElementById('closeCart'),
+  checkoutBtn: document.getElementById('checkoutBtn'),
+  loadingIndicator: document.getElementById('loadingIndicator')
+};
+
+function init() {
+  loadItems();
+  setupEventListeners();
+  updateCart();
+}
+
+async function loadItems() {
+  if (state.isLoading) return;
   
-  // Проверка инициализации Telegram WebApp
-  if (!window.Telegram?.WebApp?.initData) {
-    document.body.innerHTML = `
-      <div class="error-screen">
-        <h2>Пожалуйста, откройте приложение через Telegram</h2>
-        <p>Это мини-приложение работает только внутри Telegram</p>
-      </div>
-    `;
-    throw new Error("Telegram WebApp not initialized");
-  }
-  
-  const tg = window.Telegram.WebApp;
-  tg.expand();
-  tg.enableClosingConfirmation();
-  
-  // Состояние приложения
-  const state = {
-    items: [],
-    cart: [],
-    isLoading: false
-  };
-  
-  // DOM элементы
-  const elements = {
-    itemsContainer: document.getElementById('itemsContainer'),
-    loadingIndicator: document.getElementById('loadingIndicator'),
-    errorContainer: document.getElementById('errorContainer')
-  };
-  
-  // Инициализация
-  function init() {
-    loadItems();
-    setupEventListeners();
-  }
-  
-  // Загрузка товаров
-  async function loadItems() {
-    if (state.isLoading) return;
+  state.isLoading = true;
+  showLoading(true);
+
+  try {
+    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    const data = await response.json();
     
-    state.isLoading = true;
-    showLoading(true);
-    hideError();
+    if (!Array.isArray(data)) throw new Error("Invalid data format");
+    
+    state.items = data.filter(item => item?.name && !isNaN(item.price));
+    renderItems();
+  } catch (error) {
+    console.error('Load error:', error);
+    tg.showAlert("Ошибка загрузки товаров");
+  } finally {
+    state.isLoading = false;
+    showLoading(false);
+  }
+}
+
+function renderItems() {
+  elements.itemsContainer.innerHTML = state.items.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image">
+      <div class="item-info">
+        <h3>${item.name}</h3>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
+        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
+                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
+                ${isInCart(item) ? 'disabled' : ''}>
+          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(name, price, size) {
+  const item = { name, price, size, image: event.target.closest('.item').querySelector('img').src };
   
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+  if (isInCart(item)) {
+    tg.showAlert(`"${item.name}" уже в корзине!`);
+    return;
+  }
+
+  state.cart.push(item);
+  updateCart();
+  renderItems();
   
-      const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
+  event.target.textContent = '✓ В корзине';
+  event.target.classList.add('in-cart');
+  event.target.disabled = true;
   
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
-      }
+  tg.showAlert(`"${item.name}" добавлен в корзину`);
+}
+
+function isInCart(item) {
+  return state.cart.some(cartItem => 
+    cartItem.name === item.name && 
+    cartItem.price === item.price && 
+    cartItem.size === item.size
+  );
+}
+
+function updateCart() {
+  localStorage.setItem('cart', JSON.stringify(state.cart));
+  elements.cartCounter.textContent = state.cart.length;
   
-      const text = await response.text();
-      let data;
-      
-      try {
-        // Исправляем возможные проблемы с JSON
-        const fixedText = text.replace(/,\s*\]/g, ']').replace(/"size":"([^"]*)}/g, '"size":"$1"');
-        data = JSON.parse(fixedText);
-      } catch (e) {
-        throw new Error("Неверный формат данных от сервера");
-      }
-  
-      if (!Array.isArray(data)) {
-        throw new Error("Ожидался массив товаров");
-      }
-  
-      // Фильтрация и валидация данных
-      state.items = data.filter(item => 
-        item && 
-        item.name && 
-        !isNaN(parseFloat(item.price)) &&
-        item.image
-      );
-      
-      renderItems();
-      
-    } catch (error) {
-      console.error('Ошибка загрузки:', error);
-      showError(error.message || "Не удалось загрузить товары");
-      tg.showAlert("Ошибка загрузки товаров. Попробуйте позже.");
-    } finally {
-      state.isLoading = false;
-      showLoading(false);
+  if (tg.MainButton) {
+    if (state.cart.length > 0) {
+      tg.MainButton.setText(`Корзина (${state.cart.length})`);
+      tg.MainButton.show();
+    } else {
+      tg.MainButton.hide();
     }
   }
-  
-  // Рендер товаров
-  function renderItems() {
-    if (state.items.length === 0) {
-      elements.itemsContainer.innerHTML = `
-        <div class="empty-state">
-          <p>Товары не найдены</p>
-          <button onclick="loadItems()">Обновить</button>
-        </div>
-      `;
-      return;
-    }
-  
-    elements.itemsContainer.innerHTML = state.items.map(item => `
-      <div class="item">
-        <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='https://via.placeholder.com/300'">
-        <div class="item-info">
-          <h3>${item.name}</h3>
-          <p class="price">${formatPrice(item.price)} ₽</p>
-          <p>Размер: ${item.size || 'не указан'}</p>
-          <button class="buy-button" onclick="addToCart('${item.name}', ${item.price}, '${item.size}')">
-            В корзину
-          </button>
-        </div>
+}
+
+function renderCart() {
+  elements.cartItems.innerHTML = state.cart.map((item, index) => `
+    <div class="cart-item">
+      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
+      <div>
+        <h4>${item.name}</h4>
+        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
       </div>
-    `).join('');
-  }
+      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
+    </div>
+  `).join('');
+
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  elements.cartTotal.textContent = `${total} ₽`;
+}
+
+function removeFromCart(index) {
+  state.cart.splice(index, 1);
+  updateCart();
+  renderCart();
+  renderItems();
+}
+
+function setupEventListeners() {
+  elements.cartBtn.addEventListener('click', () => {
+    renderCart();
+    elements.cartModal.style.display = 'block';
+  });
   
-  // Форматирование цены
-  function formatPrice(price) {
-    return Number(price).toLocaleString('ru-RU');
-  }
+  elements.closeCart.addEventListener('click', () => {
+    elements.cartModal.style.display = 'none';
+  });
   
-  // Показать/скрыть загрузку
-  function showLoading(show) {
-    elements.loadingIndicator.style.display = show ? 'flex' : 'none';
-  }
-  
-  // Показать ошибку
-  function showError(message) {
-    elements.errorContainer.innerHTML = `
-      <div class="error-message">
-        <p>${message}</p>
-        <button onclick="loadItems()">Попробовать снова</button>
-      </div>
-    `;
-    elements.errorContainer.style.display = 'block';
-  }
-  
-  function hideError() {
-    elements.errorContainer.style.display = 'none';
-  }
-  
-  // Инициализация при загрузке
-  document.addEventListener('DOMContentLoaded', init);
+  elements.checkoutBtn.addEventListener('click', () => {
+    if (state.cart.length === 0) return;
+    
+    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+    const orderText = state.cart.map(item => 
+      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
+    ).join('\n');
+    
+    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+    
+    state.cart = [];
+    updateCart();
+    elements.cartModal.style.display = 'none';
+  });
+}
+
+function showLoading(show) {
+  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+// Глобальные функции
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+
+// Запуск
+document.addEventListener('DOMContentLoaded', init);
