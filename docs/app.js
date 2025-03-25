@@ -9,10 +9,6 @@ if (!window.Telegram?.WebApp?.initData) {
     <div style="padding:40px;text-align:center;">
       <h2>Откройте приложение через Telegram</h2>
       <p>Это мини-приложение работает только внутри Telegram</p>
-      <button onclick="window.location.href='https://t.me/your_bot'" 
-              style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
-        Открыть в Telegram
-      </button>
     </div>
   `;
   throw new Error("Telegram WebApp not initialized");
@@ -21,8 +17,6 @@ if (!window.Telegram?.WebApp?.initData) {
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.enableClosingConfirmation();
-
-// Скрываем стандартную кнопку корзины Telegram
 tg.MainButton.hide();
 
 const state = {
@@ -43,29 +37,27 @@ const elements = {
   loadingIndicator: document.getElementById('loadingIndicator')
 };
 
-async function loadItems() {
-  if (state.isLoading) return;
-  
-  state.isLoading = true;
-  showLoading(true);
-
-  try {
-    // Временные тестовые данные
-    state.items = [{
-      name: "Пример товара",
+function init() {
+  // Временные тестовые данные
+  state.items = [
+    {
+      name: "Футболка Premium",
       price: 1990,
-      image: "https://via.placeholder.com/300",
+      image: "https://via.placeholder.com/300/6c5ce7/ffffff?text=T-Shirt",
       size: "M"
-    }];
-    
-    renderItems();
-  } catch (error) {
-    console.error('Load error:', error);
-    tg.showAlert("Ошибка загрузки товаров");
-  } finally {
-    state.isLoading = false;
-    showLoading(false);
-  }
+    },
+    {
+      name: "Кроссы Limited",
+      price: 5990,
+      image: "https://via.placeholder.com/300/00cec9/ffffff?text=Sneakers",
+      size: "42"
+    }
+  ];
+  
+  renderItems();
+  setupEventListeners();
+  updateCart();
+  showLoading(false);
 }
 
 function renderItems() {
@@ -76,10 +68,8 @@ function renderItems() {
         <h3>${item.name}</h3>
         <p>${item.price} ₽</p>
         <p>Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                onclick="addToCart('${escapeString(item.name)}', ${item.price}, '${escapeString(item.size || '')}')"
-                ${isInCart(item) ? 'disabled' : ''}>
-          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        <button class="buy-button" onclick="addToCart('${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.size ? item.size.replace(/'/g, "\\'") : ''}')">
+          В корзину
         </button>
       </div>
     </div>
