@@ -25,9 +25,16 @@ tg.MainButton.hide();
 
 const state = {
   items: [],
-  cart: JSON.parse(localStorage.getItem('cart')) || [],
+  cart: [],
   isLoading: false
 };
+
+try {
+  state.cart = JSON.parse(localStorage.getItem('cart')) || [];
+} catch (e) {
+  console.error('Ошибка чтения корзины:', e);
+  state.cart = [];
+}
 
 const elements = {
   itemsContainer: document.getElementById('itemsContainer'),
@@ -42,33 +49,12 @@ const elements = {
   searchInput: document.getElementById('searchInput'),
   searchBtn: document.getElementById('searchBtn')
 };
-// В начале файла после определения элементов
-console.log('Проверка элементов:', {
-  cartBtn: elements.cartBtn ? 'Найден' : 'Не найден',
-  cartModal: elements.cartModal ? 'Найден' : 'Не найден'
-});
-const body = document.body;
 
-// В функции init() добавьте:
 function init() {
   loadItems();
   setupEventListeners();
   updateCart();
   setupScrollHandler();
-  
-  // Защита от перекрытия кнопки
-  document.addEventListener('scroll', function() {
-    elements.cartBtn.style.transform = 'translateX(-50%)';
-  });
-}
-
-// Проверка элементов
-console.log('Elements initialized:', Object.keys(elements).filter(key => elements[key]));
-
-function init() {
-  loadItems();
-  setupEventListeners();
-  updateCart();
 }
 
 async function loadItems() {
@@ -79,6 +65,8 @@ async function loadItems() {
 
   try {
     const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
     const data = await response.json();
     
     if (!Array.isArray(data)) throw new Error("Invalid data format");
@@ -88,61 +76,42 @@ async function loadItems() {
   } catch (error) {
     console.error('Load error:', error);
     tg.showAlert("Ошибка загрузки товаров");
+    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
   } finally {
     state.isLoading = false;
     showLoading(false);
   }
 }
 
-function renderItems() {
-  elements.itemsContainer.innerHTML = state.items.map(item => `
-    <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image">
+function renderItems(items = state.items) {
+  const fragment = document.createDocumentFragment();
+  
+  items.forEach(item => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'item';
+    itemEl.innerHTML = `
+      <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="item-image" onerror="this.src='placeholder.jpg'">
       <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
+        <h3>${escapeHtml(item.name)}</h3>
+        <p>${escapeHtml(item.price)} ₽</p>
+        <p>Размер: ${escapeHtml(item.size || 'не указан')}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
                 ${isInCart(item) ? 'disabled' : ''}>
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
-    </div>
-  `).join('');
-}
-
-// В функции setupScrollHandler() замените на:
-function setupScrollHandler() {
-  const cartContainer = document.querySelector('.cart-btn-container');
-  const observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      body.classList.add('show-cart');
-      body.classList.remove('hide-cart');
-    } else {
-      body.classList.add('hide-cart');
-      body.classList.remove('show-cart');
-    }
-  }, {
-    root: null,
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    `;
+    
+    const btn = itemEl.querySelector('.buy-button');
+    btn.addEventListener('click', () => addToCart(item));
+    fragment.appendChild(itemEl);
   });
 
-  if (cartContainer) {
-    observer.observe(cartContainer);
-  }
+  elements.itemsContainer.innerHTML = '';
+  elements.itemsContainer.appendChild(fragment);
 }
 
-function addToCart(name, price, size) {
-  const itemElement = event.target.closest('.item');
-  const item = { 
-    name, 
-    price, 
-    size, 
-    image: itemElement.querySelector('img').src 
-  };
-  
+function addToCart(item) {
   if (isInCart(item)) {
     tg.showAlert(`"${item.name}" уже в корзине!`);
     return;
@@ -150,12 +119,7 @@ function addToCart(name, price, size) {
 
   state.cart.push(item);
   updateCart();
-  
-  const button = event.target;
-  button.textContent = '✓ В корзине';
-  button.classList.add('in-cart');
-  button.disabled = true;
-  
+  renderItems();
   tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
@@ -168,21 +132,36 @@ function isInCart(item) {
 }
 
 function updateCart() {
-  localStorage.setItem('cart', JSON.stringify(state.cart));
+  try {
+    localStorage.setItem('cart', JSON.stringify(state.cart));
+  } catch (e) {
+    console.error('Ошибка сохранения корзины:', e);
+  }
   elements.cartCounter.textContent = state.cart.length;
 }
 
 function renderCart() {
-  elements.cartItems.innerHTML = state.cart.map((item, index) => `
-    <div class="cart-item">
-      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
+  const fragment = document.createDocumentFragment();
+  
+  state.cart.forEach((item, index) => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'cart-item';
+    itemEl.innerHTML = `
+      <img src="${escapeHtml(item.image)}" width="60" height="60" style="border-radius:8px;" onerror="this.src='placeholder.jpg'">
       <div>
-        <h4>${item.name}</h4>
-        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
+        <h4>${escapeHtml(item.name)}</h4>
+        <p>${escapeHtml(item.price)} ₽ • ${escapeHtml(item.size || 'без размера')}</p>
       </div>
-      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
-    </div>
-  `).join('');
+      <button class="remove-item">✕</button>
+    `;
+    
+    const btn = itemEl.querySelector('.remove-item');
+    btn.addEventListener('click', () => removeFromCart(index));
+    fragment.appendChild(itemEl);
+  });
+
+  elements.cartItems.innerHTML = '';
+  elements.cartItems.appendChild(fragment);
 
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
   elements.cartTotal.textContent = `${total} ₽`;
@@ -199,59 +178,42 @@ function setupEventListeners() {
   const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
   // Кнопка корзины
-  if (elements.cartBtn) {
-    elements.cartBtn.addEventListener(clickEvent, (e) => {
-      e.preventDefault();
-      renderCart();
-      elements.cartModal.style.display = 'block';
-      console.log('Cart opened');
-    });
-  }
+  elements.cartBtn?.addEventListener(clickEvent, (e) => {
+    e.preventDefault();
+    renderCart();
+    elements.cartModal.style.display = 'block';
+  });
 
   // Закрытие корзины
-  if (elements.closeCart) {
-    elements.closeCart.addEventListener(clickEvent, () => {
-      elements.cartModal.style.display = 'none';
-    });
-  }
+  elements.closeCart?.addEventListener(clickEvent, () => {
+    elements.cartModal.style.display = 'none';
+  });
 
   // Оформление заказа
-  if (elements.checkoutBtn) {
-    elements.checkoutBtn.addEventListener(clickEvent, () => {
-      if (state.cart.length === 0) return;
-      
-      const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-      const orderText = state.cart.map(item => 
-        `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
-      ).join('\n');
-      
-      tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
-      
-      state.cart = [];
-      updateCart();
-      renderItems();
-      elements.cartModal.style.display = 'none';
-    });
-  }
+  elements.checkoutBtn?.addEventListener(clickEvent, () => {
+    if (state.cart.length === 0) return;
+    
+    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+    const orderText = state.cart.map(item => 
+      `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
+    ).join('\n');
+    
+    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+    
+    state.cart = [];
+    updateCart();
+    renderItems();
+    elements.cartModal.style.display = 'none';
+  });
 
   // Поиск
-  if (elements.searchBtn && elements.searchInput) {
-    elements.searchBtn.addEventListener('click', searchItems);
-    elements.searchInput.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') searchItems();
-    });
-    elements.searchInput.addEventListener('input', (e) => {
-      if (e.target.value.trim() === '') renderItems();
-    });
-  }
-}
-
-function escapeHtml(unsafe) {
-  return unsafe?.replace(/</g, "&lt;").replace(/>/g, "&gt;") || '';
-}
-
-function showLoading(show) {
-  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+  elements.searchBtn?.addEventListener('click', searchItems);
+  elements.searchInput?.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') searchItems();
+  });
+  elements.searchInput?.addEventListener('input', (e) => {
+    if (e.target.value.trim() === '') renderItems();
+  });
 }
 
 function searchItems() {
@@ -275,33 +237,55 @@ function searchItems() {
   if (filteredItems.length === 0) {
     elements.itemsContainer.innerHTML = `
       <div class="no-results">
-        <p>Товары по запросу "${searchTerm}" не найдены</p>
-        <button onclick="renderItems()" class="retry-btn">Показать все товары</button>
+        <p>Товары по запросу "${escapeHtml(searchTerm)}" не найдены</p>
+        <button class="retry-btn">Показать все товары</button>
       </div>
     `;
+    document.querySelector('.retry-btn').addEventListener('click', renderItems);
     return;
   }
 
-  elements.itemsContainer.innerHTML = filteredItems.map(item => `
-    <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image">
-      <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                onclick="addToCart('${item.name}', ${item.price}, '${item.size}')"
-                ${isInCart(item) ? 'disabled' : ''}>
-          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
-        </button>
-      </div>
-    </div>
-  `).join('');
+  renderItems(filteredItems);
 }
 
-// Глобальные функции
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
+function setupScrollHandler() {
+  const cartContainer = document.querySelector('.cart-btn-fixed');
+  if (!cartContainer) return;
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      document.body.classList.add('show-cart');
+      document.body.classList.remove('hide-cart');
+    } else {
+      document.body.classList.add('hide-cart');
+      document.body.classList.remove('show-cart');
+    }
+  }, {
+    root: null,
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  observer.observe(cartContainer);
+}
+
+function showLoading(show) {
+  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+function showError(message) {
+  elements.errorContainer.textContent = message;
+  elements.errorContainer.style.display = 'block';
+}
+
+function escapeHtml(unsafe) {
+  return unsafe?.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;") || '';
+}
 
 // Запуск
 document.addEventListener('DOMContentLoaded', init);
