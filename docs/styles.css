@@ -31,6 +31,46 @@ body {
   position: relative;
 }
 
+/* Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--dark);
+  z-index: 1000;
+}
+
+.splash-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  background: linear-gradient(45deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 10px;
+}
+
+.splash-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(108, 92, 231, 0.3);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Main App */
 .app-wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -68,11 +108,20 @@ body {
   margin-top: -5px;
 }
 
+/* Content */
+.content-area {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Items Grid */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px;
   margin-top: 20px;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
   padding-bottom: 100px;
 }
 
@@ -92,7 +141,6 @@ body {
   height: 300px;
   object-fit: cover;
   display: block;
-  background-color: var(--dark);
 }
 
 .item-info {
@@ -102,27 +150,17 @@ body {
   min-height: 180px;
 }
 
-.item-name {
-  color: var(--light) !important;
-  font-size: 1.1rem !important;
-  margin-bottom: 8px !important;
-  display: block !important;
-  font-weight: 500;
+.item h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.item-price {
-  color: var(--secondary) !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  margin: 8px 0 !important;
-  display: block !important;
-}
-
-.item-size {
-  color: rgba(255,255,255,0.8) !important;
-  font-size: 0.9rem !important;
-  margin: 8px 0 !important;
-  display: block !important;
+.item p {
+  margin: 5px 0;
+  font-size: 0.9rem;
 }
 
 .buy-button {
@@ -146,6 +184,7 @@ body {
   cursor: not-allowed;
 }
 
+/* Search */
 .search-container {
   margin: 20px 0;
   display: flex;
@@ -177,6 +216,7 @@ body {
   background: var(--primary-dark);
 }
 
+/* Cart Button */
 #cartButtonContainer {
   position: fixed;
   bottom: 20px;
@@ -225,6 +265,7 @@ body {
   font-size: 12px;
 }
 
+/* Modal */
 .modal {
   position: fixed;
   top: 0;
@@ -358,6 +399,7 @@ body {
   background: #00a884;
 }
 
+/* Loading */
 .loading-indicator {
   position: fixed;
   top: 0;
@@ -382,11 +424,12 @@ body {
   margin-bottom: 15px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loading-indicator p {
+  color: var(--light);
+  font-size: 1rem;
 }
 
+/* Error */
 .error-container {
   background: rgba(255, 71, 87, 0.1);
   border-radius: 16px;
@@ -397,29 +440,7 @@ body {
   display: none;
 }
 
-.retry-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  margin-top: 15px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.retry-btn:hover {
-  background: var(--primary-dark);
-}
-
-.no-items {
-  text-align: center;
-  padding: 40px;
-  grid-column: 1 / -1;
-  color: rgba(255,255,255,0.7);
-}
-
-/* Мобильные стили */
+/* Mobile Styles */
 @media (max-width: 768px) {
   .app-wrapper {
     padding: 15px;
@@ -429,6 +450,7 @@ body {
   .items-grid {
     grid-template-columns: 1fr;
     gap: 15px;
+    max-height: calc(100vh - 220px);
   }
   
   .item-image {
@@ -465,12 +487,4 @@ body {
   .modal-content {
     max-height: 85vh;
   }
-}
-
-/* Фикс для мобильного Telegram */
-.mobile-telegram .item-info > * {
-  opacity: 1 !important;
-  visibility: visible !important;
-  position: relative !important;
-  z-index: 1 !important;
-}
+} 

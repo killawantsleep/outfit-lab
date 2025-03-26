@@ -1,6 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 20000
+  TIMEOUT: 10000
 };
 
 // Проверка на открытие в Telegram WebApp
@@ -26,8 +26,7 @@ tg.MainButton.hide();
 const state = {
   items: [],
   cart: [],
-  isLoading: false,
-  error: null
+  isLoading: false
 };
 
 try {
@@ -48,60 +47,35 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn'),
-  errorContainer: document.getElementById('errorContainer')
+  searchBtn: document.getElementById('searchBtn')
 };
 
 function init() {
+  loadItems();
   setupEventListeners();
   updateCart();
-  loadItems();
 }
 
 async function loadItems() {
   if (state.isLoading) return;
   
   state.isLoading = true;
-  state.error = null;
   showLoading(true);
-  clearError();
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
-    
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`, {
-      signal: controller.signal,
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
     
-    if (!Array.isArray(data)) throw new Error("Данные не в формате массива");
+    if (!Array.isArray(data)) throw new Error("Invalid data format");
     
-    state.items = data
-      .map(item => ({
-        name: String(item.name || '').trim() || null,
-        price: Math.max(0, Number(item.price) || 0),
-        size: String(item.size || 'не указан').trim(),
-        image: String(item.image || 'placeholder.jpg').trim()
-      }))
-      .filter(item => item.name !== null);
-    
-    if (state.items.length === 0) {
-      showError("Нет доступных товаров");
-    } else {
-      renderItems();
-    }
+    state.items = data.filter(item => item?.name && !isNaN(item.price));
+    renderItems();
   } catch (error) {
-    console.error('Ошибка загрузки:', error);
-    state.error = error;
-    showError(`Ошибка загрузки: ${error.message}`);
+    console.error('Load error:', error);
+    tg.showAlert("Ошибка загрузки товаров");
+    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -109,25 +83,15 @@ async function loadItems() {
 }
 
 function renderItems(items = state.items) {
-  if (items.length === 0) {
-    elements.itemsContainer.innerHTML = `
-      <div class="no-items">
-        <p>Товары не найдены</p>
-        <button class="retry-btn" onclick="loadItems()">Попробовать снова</button>
-      </div>
-    `;
-    return;
-  }
-
   elements.itemsContainer.innerHTML = items.map(item => `
     <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg';this.onerror=null;">
+      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
       <div class="item-info">
-        <h3 class="item-name">${item.name}</h3>
-        <p class="item-price">${item.price.toFixed(2)} ₽</p>
-        <p class="item-size">Размер: ${item.size}</p>
+        <h3>${item.name}</h3>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                data-id="${encodeURIComponent(item.name)}-${item.price}-${encodeURIComponent(item.size)}">
+                data-id="${item.name}-${item.price}-${item.size}">
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
@@ -137,7 +101,7 @@ function renderItems(items = state.items) {
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
       const item = items.find(i => 
-        `${encodeURIComponent(i.name)}-${i.price}-${encodeURIComponent(i.size)}` === this.dataset.id
+        `${i.name}-${i.price}-${i.size}` === this.dataset.id
       );
       if (item) addToCart(item);
     });
@@ -173,50 +137,20 @@ function updateCart() {
   elements.cartCounter.textContent = state.cart.length;
 }
 
-function showLoading(show) {
-  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
-}
-
-function showError(message) {
-  elements.errorContainer.innerHTML = `
-    <p>${message}</p>
-    <button class="retry-btn" onclick="loadItems()">Попробовать снова</button>
-  `;
-  elements.errorContainer.style.display = 'block';
-}
-
-function clearError() {
-  elements.errorContainer.style.display = 'none';
-}
-
-function setupEventListeners() {
-  elements.cartBtn?.addEventListener('click', () => {
-    renderCart();
-    openModal();
-  });
-
-  elements.closeCart?.addEventListener('click', closeModal);
-  elements.checkoutBtn?.addEventListener('click', checkout);
-  elements.searchBtn?.addEventListener('click', searchItems);
-  elements.searchInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') searchItems();
-  });
-}
-
 function renderCart() {
   elements.cartItems.innerHTML = state.cart.map((item, index) => `
     <div class="cart-item">
       <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
       <div>
         <h4>${item.name}</h4>
-        <p>${item.price} ₽ • ${item.size}</p>
+        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
       </div>
       <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
 
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  elements.cartTotal.textContent = `${total.toFixed(2)} ₽`;
+  elements.cartTotal.textContent = `${total} ₽`;
 }
 
 function removeFromCart(index) {
@@ -226,30 +160,51 @@ function removeFromCart(index) {
   renderItems();
 }
 
-function checkout() {
-  if (state.cart.length === 0) return;
+function setupEventListeners() {
+  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
-  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  const orderText = state.cart.map(item => 
-    `• ${item.name} - ${item.price} ₽ (${item.size})`
-  ).join('\n');
-  
-  tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total.toFixed(2)} ₽`);
-  state.cart = [];
-  updateCart();
-  renderItems();
-  closeModal();
-}
+  // Кнопка корзины
+  elements.cartBtn?.addEventListener(clickEvent, (e) => {
+    e.preventDefault();
+    renderCart();
+    openModal();
+  });
 
-function searchItems() {
-  const term = elements.searchInput.value.toLowerCase().trim();
-  if (!term) return renderItems();
-  
-  const filtered = state.items.filter(item => 
-    item.name.toLowerCase().includes(term) || 
-    item.size.toLowerCase().includes(term)
-  );
-  renderItems(filtered.length > 0 ? filtered : []);
+  // Закрытие корзины
+  elements.closeCart?.addEventListener(clickEvent, (e) => {
+    e.stopPropagation();
+    closeModal();
+  });
+
+  // Закрытие по клику вне области
+  elements.cartModal?.addEventListener(clickEvent, (e) => {
+    if (e.target === elements.cartModal) {
+      closeModal();
+    }
+  });
+
+  // Оформление заказа
+  elements.checkoutBtn?.addEventListener(clickEvent, () => {
+    if (state.cart.length === 0) return;
+    
+    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+    const orderText = state.cart.map(item => 
+      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
+    ).join('\n');
+    
+    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
+    
+    state.cart = [];
+    updateCart();
+    renderItems();
+    closeModal();
+  });
+
+  // Поиск
+  elements.searchBtn?.addEventListener('click', searchItems);
+  elements.searchInput?.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') searchItems();
+  });
 }
 
 function openModal() {
@@ -262,8 +217,49 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
+function searchItems() {
+  if (!state.items.length) {
+    tg.showAlert("Товары ещё не загружены");
+    return;
+  }
+
+  const searchTerm = elements.searchInput.value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    renderItems();
+    return;
+  }
+
+  const filteredItems = state.items.filter(item => 
+    item.name.toLowerCase().includes(searchTerm) || 
+    (item.size && item.size.toLowerCase().includes(searchTerm))
+  );
+
+  if (filteredItems.length === 0) {
+    elements.itemsContainer.innerHTML = `
+      <div class="no-results">
+        <p>Товары по запросу "${searchTerm}" не найдены</p>
+        <button class="retry-btn">Показать все товары</button>
+      </div>
+    `;
+    document.querySelector('.retry-btn').addEventListener('click', renderItems);
+    return;
+  }
+
+  renderItems(filteredItems);
+}
+
+function showLoading(show) {
+  elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+function showError(message) {
+  elements.errorContainer.textContent = message;
+  elements.errorContainer.style.display = 'block';
+}
+
 // Глобальные функции
 window.removeFromCart = removeFromCart;
-window.loadItems = loadItems;
 
+// Запуск
 document.addEventListener('DOMContentLoaded', init);
