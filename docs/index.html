@@ -102,26 +102,27 @@
     </main>
 
     <!-- Модальное окно корзины -->
-<div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="cartModalTitle">Ваша корзина</h2>
-      <button id="closeCart" class="close-btn" aria-label="Закрыть">&times;</button>
-    </div>
-    <div id="cartItems" class="cart-items-list" role="list"></div>
-    <div class="cart-footer">
-      <div class="total-price">
-        <span>Итого:</span>
-        <span id="cartTotal" aria-live="polite">0 ₽</span>
+    <div id="cartModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Ваша корзина</h2>
+          <button id="closeCart" class="close-btn">&times;</button>
+        </div>
+        <div id="cartItems" class="cart-items-list"></div>
+        <div class="cart-footer">
+          <div class="total-price">
+            <span>Итого:</span>
+            <span id="cartTotal">0 ₽</span>
+          </div>
+          <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
+        </div>
       </div>
-      <button id="checkoutBtn" class="checkout-btn">Оформить заказ</button>
     </div>
   </div>
-</div>
 
-  <!-- Кнопка корзины - теперь всегда в конце body -->
+  <!-- Кнопка корзины -->
   <div id="cartButtonContainer">
-    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
+    <button id="cartBtn" class="cart-btn">
       <span class="cart-icon">🛍</span>
       <span class="cart-text">Корзина</span>
       <span id="cartCounter" class="cart-counter">0</span>

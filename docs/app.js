@@ -51,18 +51,9 @@ const elements = {
 };
 
 function init() {
-  // Принудительно показываем кнопку
-  const cartContainer = document.getElementById('cartButtonContainer');
-  if (cartContainer) {
-    cartContainer.style.display = 'block';
-    cartContainer.style.opacity = '1';
-    cartContainer.style.visibility = 'visible';
-  }
-
   loadItems();
   setupEventListeners();
   updateCart();
-  setupScrollHandler();
 }
 
 async function loadItems() {
@@ -84,7 +75,6 @@ async function loadItems() {
   } catch (error) {
     console.error('Load error:', error);
     tg.showAlert("Ошибка загрузки товаров");
-    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -97,8 +87,8 @@ function renderItems(items = state.items) {
       <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
       <div class="item-info">
         <h3>${item.name}</h3>
-        <p class="price">${item.price} ₽</p>
-        <p class="size">Размер: ${item.size || 'не указан'}</p>
+        <p>${item.price} ₽</p>
+        <p>Размер: ${item.size || 'не указан'}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
                 data-id="${item.name}-${item.price}-${item.size}">
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
@@ -107,7 +97,6 @@ function renderItems(items = state.items) {
     </div>
   `).join('');
 
-  // Добавляем обработчики для всех кнопок
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
       const item = items.find(i => 
@@ -148,27 +137,16 @@ function updateCart() {
 }
 
 function renderCart() {
-  const fragment = document.createDocumentFragment();
-  
-  state.cart.forEach((item, index) => {
-    const itemEl = document.createElement('div');
-    itemEl.className = 'cart-item';
-    itemEl.innerHTML = `
-      <img src="${escapeHtml(item.image)}" width="60" height="60" style="border-radius:8px;" onerror="this.src='placeholder.jpg'">
+  elements.cartItems.innerHTML = state.cart.map((item, index) => `
+    <div class="cart-item">
+      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
       <div>
-        <h4>${escapeHtml(item.name)}</h4>
-        <p>${escapeHtml(item.price)} ₽ • ${escapeHtml(item.size || 'без размера')}</p>
+        <h4>${item.name}</h4>
+        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
       </div>
-      <button class="remove-item">✕</button>
-    `;
-    
-    const btn = itemEl.querySelector('.remove-item');
-    btn.addEventListener('click', () => removeFromCart(index));
-    fragment.appendChild(itemEl);
-  });
-
-  elements.cartItems.innerHTML = '';
-  elements.cartItems.appendChild(fragment);
+      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
+    </div>
+  `).join('');
 
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
   elements.cartTotal.textContent = `${total} ₽`;
@@ -189,22 +167,21 @@ function setupEventListeners() {
     e.preventDefault();
     renderCart();
     elements.cartModal.style.display = 'block';
-    document.body.style.overflow = 'hidden'; // Блокируем скролл основного контента
+    document.body.style.overflow = 'hidden';
   });
 
   // Закрытие корзины
-  elements.closeCart?.addEventListener(clickEvent, () => {
-    elements.cartModal.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Восстанавливаем скролл
-    // Добавьте в setupEventListeners
-elements.cartModal?.addEventListener(clickEvent, (e) => {
-  if (e.target === elements.cartModal) {
-    elements.cartModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-  }
-});
+  elements.closeCart?.addEventListener(clickEvent, (e) => {
+    e.stopPropagation();
+    closeModal();
   });
 
+  // Закрытие по клику вне области
+  elements.cartModal?.addEventListener(clickEvent, (e) => {
+    if (e.target === elements.cartModal) {
+      closeModal();
+    }
+  });
 
   // Оформление заказа
   elements.checkoutBtn?.addEventListener(clickEvent, () => {
@@ -212,7 +189,7 @@ elements.cartModal?.addEventListener(clickEvent, (e) => {
     
     const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
     const orderText = state.cart.map(item => 
-      `• ${escapeHtml(item.name)} - ${item.price} ₽ (${item.size || 'без размера'})`
+      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
     ).join('\n');
     
     tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
@@ -220,7 +197,7 @@ elements.cartModal?.addEventListener(clickEvent, (e) => {
     state.cart = [];
     updateCart();
     renderItems();
-    elements.cartModal.style.display = 'none';
+    closeModal();
   });
 
   // Поиск
@@ -228,9 +205,11 @@ elements.cartModal?.addEventListener(clickEvent, (e) => {
   elements.searchInput?.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') searchItems();
   });
-  elements.searchInput?.addEventListener('input', (e) => {
-    if (e.target.value.trim() === '') renderItems();
-  });
+}
+
+function closeModal() {
+  elements.cartModal.style.display = 'none';
+  document.body.style.overflow = 'auto';
 }
 
 function searchItems() {
@@ -254,7 +233,7 @@ function searchItems() {
   if (filteredItems.length === 0) {
     elements.itemsContainer.innerHTML = `
       <div class="no-results">
-        <p>Товары по запросу "${escapeHtml(searchTerm)}" не найдены</p>
+        <p>Товары по запросу "${searchTerm}" не найдены</p>
         <button class="retry-btn">Показать все товары</button>
       </div>
     `;
@@ -265,44 +244,12 @@ function searchItems() {
   renderItems(filteredItems);
 }
 
-function setupScrollHandler() {
-  const cartContainer = document.querySelector('.cart-btn-fixed');
-  if (!cartContainer) return;
-
-  const observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      document.body.classList.add('show-cart');
-      document.body.classList.remove('hide-cart');
-    } else {
-      document.body.classList.add('hide-cart');
-      document.body.classList.remove('show-cart');
-    }
-  }, {
-    root: null,
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  });
-
-  observer.observe(cartContainer);
-}
-
 function showLoading(show) {
   elements.loadingIndicator.style.display = show ? 'flex' : 'none';
 }
 
-function showError(message) {
-  elements.errorContainer.textContent = message;
-  elements.errorContainer.style.display = 'block';
-}
-
-function escapeHtml(unsafe) {
-  return unsafe?.toString()
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;") || '';
-}
+// Глобальные функции
+window.removeFromCart = removeFromCart;
 
 // Запуск
 document.addEventListener('DOMContentLoaded', init);
