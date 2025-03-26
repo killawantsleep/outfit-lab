@@ -84,26 +84,6 @@
       <div id="errorContainer" class="error-container" style="display: none;"></div>
       
       <div class="search-container">
-            <!-- Поисковая строка -->
-  </div>
-  
-  <div id="itemsContainer" class="items-grid" role="list"></div>
-  
-  <!-- Контейнер для кнопки корзины -->
-  <div class="cart-btn-container">
-    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
-      <span class="cart-icon">🛍</span>
-      <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
-    </button>
-  </div>
-  
-  <div id="loadingIndicator" class="loading-indicator">
-    <!-- Индикатор загрузки -->
-  </div>
-</main>
-
-
         <input 
           type="text" 
           id="searchInput" 
@@ -116,18 +96,22 @@
       
       <div id="itemsContainer" class="items-grid" role="list"></div>
       
+      <!-- Контейнер для кнопки корзины (теперь часть основного потока) -->
+      <div class="cart-btn-container">
+        <button id="cartBtn" class="cart-btn" aria-label="Корзина">
+          <span class="cart-icon">🛍</span>
+          <span class="cart-text">Корзина</span>
+          <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
+        </button>
+      </div>
+      
       <div id="loadingIndicator" class="loading-indicator">
         <div class="loader"></div>
         <p>Загрузка товаров...</p>
       </div>
     </main>
 
-    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
-      <span class="cart-icon">🛍</span>
-      <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter" aria-live="polite">0</span>
-    </button>
-
+    <!-- Модальное окно корзины -->
     <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
       <div class="modal-content">
         <div class="modal-header">

@@ -121,6 +121,8 @@ body {
   display: flex;
   justify-content: center;
   transition: all 0.3s;
+  padding: 10px 0;
+  background: linear-gradient(transparent, var(--dark) 70%);
 }
 
 .cart-btn {
