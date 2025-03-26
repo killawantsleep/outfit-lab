@@ -84,31 +84,30 @@ async function loadItems() {
 }
 
 function renderItems(items = state.items) {
-  const fragment = document.createDocumentFragment();
-  
-  items.forEach(item => {
-    const itemEl = document.createElement('div');
-    itemEl.className = 'item';
-    itemEl.innerHTML = `
-      <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" class="item-image" onerror="this.src='placeholder.jpg'">
+  elements.itemsContainer.innerHTML = items.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
       <div class="item-info">
-        <h3>${escapeHtml(item.name)}</h3>
-        <p>${escapeHtml(item.price)} ₽</p>
-        <p>Размер: ${escapeHtml(item.size || 'не указан')}</p>
+        <h3>${item.name}</h3>
+        <p class="price">${item.price} ₽</p>
+        <p class="size">Размер: ${item.size || 'не указан'}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                ${isInCart(item) ? 'disabled' : ''}>
+                data-id="${item.name}-${item.price}-${item.size}">
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
-    `;
-    
-    const btn = itemEl.querySelector('.buy-button');
-    btn.addEventListener('click', () => addToCart(item));
-    fragment.appendChild(itemEl);
-  });
+    </div>
+  `).join('');
 
-  elements.itemsContainer.innerHTML = '';
-  elements.itemsContainer.appendChild(fragment);
+  // Добавляем обработчики для всех кнопок
+  document.querySelectorAll('.buy-button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const item = items.find(i => 
+        `${i.name}-${i.price}-${i.size}` === this.dataset.id
+      );
+      if (item) addToCart(item);
+    });
+  });
 }
 
 function addToCart(item) {
