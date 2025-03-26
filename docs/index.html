@@ -79,37 +79,27 @@
       </div>
     </header>
 
-  <!-- Внутри body, замените content-area на: -->
-<main class="content-area">
-  <div id="errorContainer" class="error-container" style="display: none;"></div>
-  
-  <div class="search-container">
-    <input 
-      type="text" 
-      id="searchInput" 
-      placeholder="Найти кроссовки, футболки..." 
-      class="search-input"
-      aria-label="Поиск товаров"
-    >
-    <button id="searchBtn" class="search-button" aria-label="Найти">Поиск</button>
-  </div>
-  
-  <div id="itemsContainer" class="items-grid"></div>
-  
-  <!-- Фиксированная кнопка корзины -->
-  <div class="cart-btn-container">
-    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
-      <span class="cart-icon">🛍</span>
-      <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter">0</span>
-    </button>
-  </div>
-
-  <div id="loadingIndicator" class="loading-indicator">
-    <div class="loader"></div>
-    <p>Загрузка товаров...</p>
-  </div>
-</main>
+    <main class="content-area">
+      <div id="errorContainer" class="error-container" style="display: none;"></div>
+      
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="searchInput" 
+          placeholder="Найти кроссовки, футболки..." 
+          class="search-input"
+          aria-label="Поиск товаров"
+        >
+        <button id="searchBtn" class="search-button" aria-label="Найти">Поиск</button>
+      </div>
+      
+      <div id="itemsContainer" class="items-grid"></div>
+      
+      <div id="loadingIndicator" class="loading-indicator">
+        <div class="loader"></div>
+        <p>Загрузка товаров...</p>
+      </div>
+    </main>
 
     <!-- Модальное окно корзины -->
     <div id="cartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
@@ -130,6 +120,15 @@
     </div>
   </div>
 
+  <!-- Кнопка корзины - теперь всегда в конце body -->
+  <div id="cartButtonContainer">
+    <button id="cartBtn" class="cart-btn" aria-label="Корзина">
+      <span class="cart-icon">🛍</span>
+      <span class="cart-text">Корзина</span>
+      <span id="cartCounter" class="cart-counter">0</span>
+    </button>
+  </div>
+
   <script src="app.js" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -148,13 +147,5 @@
       }, 1000);
     });
   </script>
-  <div id="cartButtonContainer" style="display: none;">
-    <button id="cartBtn" class="cart-btn">
-      <span class="cart-icon">🛍</span>
-      <span class="cart-text">Корзина</span>
-      <span id="cartCounter" class="cart-counter">0</span>
-    </button>
-  </div>
-  
 </body>
 </html>
