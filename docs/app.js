@@ -1,6 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 15000 // Увеличенный таймаут для мобильных
+  TIMEOUT: 15000
 };
 
 // Проверка на открытие в Telegram WebApp
@@ -84,6 +84,7 @@ async function loadItems() {
     
     if (!Array.isArray(data)) throw new Error("Invalid data format");
     
+    // Обработка ваших реальных данных из Google Таблиц
     state.items = data.map(item => ({
       name: sanitizeText(item.name) || 'Без названия',
       price: Number(item.price) || 0,
@@ -95,10 +96,6 @@ async function loadItems() {
   } catch (error) {
     console.error('Load error:', error);
     showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
-    
-    // Показываем тестовые данные при ошибке
-    state.items = getTestItems();
-    renderItems();
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -107,23 +104,6 @@ async function loadItems() {
 
 function sanitizeText(text) {
   return String(text || '').trim().replace(/[\n\r]/g, '');
-}
-
-function getTestItems() {
-  return [
-    {
-      name: "Тестовая футболка",
-      price: 1999,
-      size: "XL",
-      image: "https://via.placeholder.com/300"
-    },
-    {
-      name: "Тестовые джинсы",
-      price: 4999,
-      size: "L",
-      image: ""
-    }
-  ];
 }
 
 function renderItems(items = state.items) {
@@ -160,6 +140,7 @@ function renderItems(items = state.items) {
     });
   });
 }
+
 
 function addToCart(item) {
   if (isInCart(item)) {
