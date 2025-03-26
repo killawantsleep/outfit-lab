@@ -196,6 +196,13 @@ function setupEventListeners() {
   elements.closeCart?.addEventListener(clickEvent, () => {
     elements.cartModal.style.display = 'none';
     document.body.style.overflow = 'auto'; // Восстанавливаем скролл
+    // Добавьте в setupEventListeners
+elements.cartModal?.addEventListener(clickEvent, (e) => {
+  if (e.target === elements.cartModal) {
+    elements.cartModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+});
   });
 
 
