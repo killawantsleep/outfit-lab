@@ -1,6 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 10000
+  TIMEOUT: 15000 // Увеличенный таймаут для мобильных
 };
 
 // Проверка на открытие в Telegram WebApp
@@ -23,12 +23,18 @@ tg.expand();
 tg.enableClosingConfirmation();
 tg.MainButton.hide();
 
+// Добавляем класс для мобильного Telegram
+if (tg.isMobile) {
+  document.documentElement.classList.add('mobile-telegram');
+}
+
 const state = {
   items: [],
   cart: [],
   isLoading: false
 };
 
+// Безопасное чтение из localStorage
 try {
   state.cart = JSON.parse(localStorage.getItem('cart')) || [];
 } catch (e) {
@@ -47,7 +53,8 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn')
+  searchBtn: document.getElementById('searchBtn'),
+  errorContainer: document.getElementById('errorContainer')
 };
 
 function init() {
@@ -63,35 +70,81 @@ async function loadItems() {
   showLoading(true);
 
   try {
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    const url = `${CONFIG.SCRIPT_URL}?t=${Date.now()}&platform=${tg.isMobile ? 'mobile' : 'desktop'}`;
+    const response = await fetch(url, {
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
+    console.log('Data received:', data);
     
     if (!Array.isArray(data)) throw new Error("Invalid data format");
     
-    state.items = data.filter(item => item?.name && !isNaN(item.price));
+    state.items = data.map(item => ({
+      name: sanitizeText(item.name) || 'Без названия',
+      price: Number(item.price) || 0,
+      size: sanitizeText(item.size) || 'не указан',
+      image: item.image || 'placeholder.jpg'
+    })).filter(item => item.name !== 'Без названия');
+    
     renderItems();
   } catch (error) {
     console.error('Load error:', error);
-    tg.showAlert("Ошибка загрузки товаров");
     showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
+    
+    // Показываем тестовые данные при ошибке
+    state.items = getTestItems();
+    renderItems();
   } finally {
     state.isLoading = false;
     showLoading(false);
   }
 }
 
+function sanitizeText(text) {
+  return String(text || '').trim().replace(/[\n\r]/g, '');
+}
+
+function getTestItems() {
+  return [
+    {
+      name: "Тестовая футболка",
+      price: 1999,
+      size: "XL",
+      image: "https://via.placeholder.com/300"
+    },
+    {
+      name: "Тестовые джинсы",
+      price: 4999,
+      size: "L",
+      image: ""
+    }
+  ];
+}
+
 function renderItems(items = state.items) {
+  if (items.length === 0) {
+    elements.itemsContainer.innerHTML = `
+      <div class="no-items">
+        <p>Товары не найдены</p>
+      </div>
+    `;
+    return;
+  }
+
   elements.itemsContainer.innerHTML = items.map(item => `
     <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
+      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg';this.onerror=null;">
       <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
+        <h3 class="item-name">${item.name}</h3>
+        <p class="item-price">${item.price.toFixed(2)} ₽</p>
+        <p class="item-size">Размер: ${item.size}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                data-id="${item.name}-${item.price}-${item.size}">
+                data-id="${encodeURIComponent(item.name)}-${item.price}-${encodeURIComponent(item.size)}">
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
@@ -101,7 +154,7 @@ function renderItems(items = state.items) {
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
       const item = items.find(i => 
-        `${i.name}-${i.price}-${i.size}` === this.dataset.id
+        `${encodeURIComponent(i.name)}-${i.price}-${encodeURIComponent(i.size)}` === this.dataset.id
       );
       if (item) addToCart(item);
     });

@@ -488,3 +488,55 @@ body {
     max-height: 85vh;
   }
 }
+/* Фиксы для мобильного Telegram */
+.mobile-telegram .item-info {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.mobile-telegram .item-name,
+.mobile-telegram .item-price,
+.mobile-telegram .item-size {
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 1 !important;
+  color: #ffffff !important;
+}
+
+.item-name {
+  font-size: 1.1rem !important;
+  margin-bottom: 8px !important;
+  color: white !important;
+  display: block !important;
+}
+
+.item-price {
+  font-size: 1rem !important;
+  font-weight: bold;
+  color: #00cec9 !important;
+  margin: 8px 0 !important;
+  display: block !important;
+}
+
+.item-size {
+  font-size: 0.9rem !important;
+  color: rgba(255,255,255,0.8) !important;
+  margin: 8px 0 !important;
+  display: block !important;
+}
+
+/* Гарантированное отображение текста в WebView */
+@supports (-webkit-touch-callout: none) {
+  .item-info > * {
+    position: relative !important;
+    z-index: 1 !important;
+  }
+}
+
+.no-items {
+  text-align: center;
+  padding: 40px;
+  grid-column: 1 / -1;
+  color: rgba(255,255,255,0.7);
+}
