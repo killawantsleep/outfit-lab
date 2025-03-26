@@ -939,3 +939,49 @@ body {
     bottom: 40px !important;
   }
 }
+/* Фиксированная кнопка корзины */
+.cart-btn-fixed {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.cart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  background: linear-gradient(45deg, #6c5ce7, #9c88ff);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+  transition: all 0.3s;
+}
+
+/* Гарантируем, что товары не перекрывают кнопку */
+.items-grid {
+  padding-bottom: 80px !important;
+}
+
+@media (max-width: 768px) {
+  .cart-btn-fixed {
+    padding: 0 15px;
+  }
+  .cart-btn {
+    max-width: 100%;
+  }
+}
