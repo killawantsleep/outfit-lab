@@ -189,12 +189,15 @@ function setupEventListeners() {
     e.preventDefault();
     renderCart();
     elements.cartModal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Блокируем скролл основного контента
   });
 
   // Закрытие корзины
   elements.closeCart?.addEventListener(clickEvent, () => {
     elements.cartModal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Восстанавливаем скролл
   });
+
 
   // Оформление заказа
   elements.checkoutBtn?.addEventListener(clickEvent, () => {
