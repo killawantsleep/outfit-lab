@@ -51,6 +51,11 @@ const elements = {
 };
 
 function init() {
+  // Принудительно показываем кнопку корзины
+  const cartBtn = document.querySelector('.cart-btn-container');
+  if (cartBtn) cartBtn.style.display = 'block';
+  
+
   loadItems();
   setupEventListeners();
   updateCart();
