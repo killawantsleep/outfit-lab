@@ -75,6 +75,7 @@ async function loadItems() {
   } catch (error) {
     console.error('Load error:', error);
     tg.showAlert("Ошибка загрузки товаров");
+    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -166,8 +167,7 @@ function setupEventListeners() {
   elements.cartBtn?.addEventListener(clickEvent, (e) => {
     e.preventDefault();
     renderCart();
-    elements.cartModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    openModal();
   });
 
   // Закрытие корзины
@@ -205,6 +205,11 @@ function setupEventListeners() {
   elements.searchInput?.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') searchItems();
   });
+}
+
+function openModal() {
+  elements.cartModal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
@@ -246,6 +251,11 @@ function searchItems() {
 
 function showLoading(show) {
   elements.loadingIndicator.style.display = show ? 'flex' : 'none';
+}
+
+function showError(message) {
+  elements.errorContainer.textContent = message;
+  elements.errorContainer.style.display = 'block';
 }
 
 // Глобальные функции
