@@ -47,12 +47,14 @@ console.log('Проверка элементов:', {
   cartBtn: elements.cartBtn ? 'Найден' : 'Не найден',
   cartModal: elements.cartModal ? 'Найден' : 'Не найден'
 });
+const body = document.body;
 
 // В функции init() добавьте:
 function init() {
   loadItems();
   setupEventListeners();
   updateCart();
+  setupScrollHandler();
   
   // Защита от перекрытия кнопки
   document.addEventListener('scroll', function() {
@@ -108,6 +110,35 @@ function renderItems() {
       </div>
     </div>
   `).join('');
+}
+
+function setupScrollHandler() {
+  let lastScrollPos = 0;
+  const cartThreshold = 100; // Расстояние до низа, когда показываем корзину
+  
+  window.addEventListener('scroll', () => {
+    const scrollPos = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const docHeight = document.body.scrollHeight;
+    
+    // Если внизу страницы
+    if (window.scrollY + windowHeight >= docHeight - cartThreshold) {
+      body.classList.add('show-cart');
+      body.classList.remove('hide-cart');
+    } 
+    // Если скроллим вверх
+    else if (scrollPos < lastScrollPos) {
+      body.classList.add('show-cart');
+      body.classList.remove('hide-cart');
+    } 
+    // Если скроллим вниз
+    else {
+      body.classList.add('hide-cart');
+      body.classList.remove('show-cart');
+    }
+    
+    lastScrollPos = scrollPos;
+  });
 }
 
 function addToCart(name, price, size) {
