@@ -1,57 +1,37 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 10000
+  DELIVERY_COST: 440
 };
 
-// Проверка на открытие в Telegram WebApp
+// Проверка WebApp Telegram
 if (!window.Telegram?.WebApp?.initData) {
   document.body.innerHTML = `
     <div style="padding:40px;text-align:center;">
       <h2>Откройте приложение через Telegram</h2>
-      <p>Это мини-приложение работает только внутри Telegram</p>
       <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
               style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
         Открыть в Telegram
       </button>
     </div>
   `;
-  throw new Error("Telegram WebApp not initialized");
+  throw new Error("Not in Telegram WebApp");
 }
 
 const tg = window.Telegram.WebApp;
-if (tg.isMobile) {
-  document.documentElement.classList.add('mobile-telegram');
-  
-  // Фикс для обновления layout
-  setTimeout(() => {
-    document.body.style.display = 'none';
-    document.body.offsetHeight;
-    document.body.style.display = 'block';
-  }, 100);
-}
-
-const DELIVERY_COST = 440;
+tg.expand();
+tg.enableClosingConfirmation();
 
 const state = {
   items: [],
-  cart: [],
-  isLoading: false
+  cart: JSON.parse(localStorage.getItem('cart')) || [],
+  formData: null
 };
-
-try {
-  state.cart = JSON.parse(localStorage.getItem('cart')) || [];
-} catch (e) {
-  console.error('Ошибка чтения корзины:', e);
-  state.cart = [];
-}
 
 const elements = {
   itemsContainer: document.getElementById('itemsContainer'),
   cartBtn: document.getElementById('cartBtn'),
   cartCounter: document.getElementById('cartCounter'),
   cartModal: document.getElementById('cartModal'),
-  cartItems: document.getElementById('cartItems'),
-  cartTotal: document.getElementById('cartTotal'),
   closeCart: document.getElementById('closeCart'),
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
@@ -59,15 +39,22 @@ const elements = {
   searchBtn: document.getElementById('searchBtn')
 };
 
+// Инициализация приложения
 function init() {
   loadItems();
   setupEventListeners();
   updateCart();
+  
+  // Закрытие клавиатуры при клике вне полей
+  document.addEventListener('click', (e) => {
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+      document.activeElement?.blur();
+    }
+  });
 }
 
+// Загрузка товаров
 async function loadItems() {
-  if (state.isLoading) return;
-  
   state.isLoading = true;
   showLoading(true);
 
@@ -76,9 +63,6 @@ async function loadItems() {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
-    
-    if (!Array.isArray(data)) throw new Error("Invalid data format");
-    
     state.items = data.filter(item => item?.name && !isNaN(item.price));
     renderItems();
   } catch (error) {
@@ -91,32 +75,7 @@ async function loadItems() {
   }
 }
 
-function renderItems(items = state.items) {
-  elements.itemsContainer.innerHTML = items.map(item => `
-    <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
-      <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                data-id="${item.name}-${item.price}-${item.size}">
-          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
-        </button>
-      </div>
-    </div>
-  `).join('');
-
-  document.querySelectorAll('.buy-button').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const item = items.find(i => 
-        `${i.name}-${i.price}-${i.size}` === this.dataset.id
-      );
-      if (item) addToCart(item);
-    });
-  });
-}
-
+// Работа с корзиной
 function addToCart(item) {
   if (isInCart(item)) {
     tg.showAlert(`"${item.name}" уже в корзине!`);
@@ -129,6 +88,13 @@ function addToCart(item) {
   tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
+function removeFromCart(index) {
+  state.cart.splice(index, 1);
+  updateCart();
+  renderCart();
+  renderItems();
+}
+
 function isInCart(item) {
   return state.cart.some(cartItem => 
     cartItem.name === item.name && 
@@ -138,209 +104,21 @@ function isInCart(item) {
 }
 
 function updateCart() {
-  try {
-    localStorage.setItem('cart', JSON.stringify(state.cart));
-  } catch (e) {
-    console.error('Ошибка сохранения корзины:', e);
-  }
+  localStorage.setItem('cart', JSON.stringify(state.cart));
   elements.cartCounter.textContent = state.cart.length;
 }
 
-function renderCart() {
-  elements.cartItems.innerHTML = state.cart.map((item, index) => `
-    <div class="cart-item">
-      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
-      <div>
-        <h4>${item.name}</h4>
-        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
-      </div>
-      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
-    </div>
-  `).join('');
-
-  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  elements.cartTotal.textContent = `${total} ₽`;
+function calculateTotal() {
+  return state.cart.reduce((sum, item) => sum + Number(item.price), 0);
 }
 
-function removeFromCart(index) {
-  state.cart.splice(index, 1);
-  updateCart();
-  renderCart();
-  renderItems();
-}
-
-function showCheckoutForm() {
-  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  
-  elements.cartModal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Оформление заказа</h2>
-        <button id="closeCart" class="close-btn">&times;</button>
-      </div>
-      <form id="checkoutForm" class="checkout-form">
-        <div class="form-group">
-          <label>Способ оплаты:</label>
-          <div class="radio-group">
-            <label>
-              <input type="radio" name="payment" value="card" checked>
-              Перевод на карту
-            </label>
-            <label>
-              <input type="radio" name="payment" value="crypto">
-              Оплата криптовалютой
-            </label>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label>Способ получения:</label>
-          <div class="radio-group">
-            <label>
-              <input type="radio" name="delivery" value="delivery" checked>
-              Доставка (${DELIVERY_COST} ₽)
-            </label>
-            <label>
-              <input type="radio" name="delivery" value="pickup">
-              Самовывоз (адрес уточнит администратор)
-            </label>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="phone">Контактный телефон (+7...):</label>
-          <input type="tel" id="phone" name="phone" pattern="^\+7\d{10}$" required>
-        </div>
-        
-        <div class="form-group delivery-address">
-          <label for="address">Адрес доставки (СДЭК):</label>
-          <input type="text" id="address" name="address">
-        </div>
-        
-        <div class="form-group">
-          <label for="name">ФИО:</label>
-          <input type="text" id="name" name="name" required>
-        </div>
-        
-        <div class="form-group">
-          <label for="telegram">Ваш Telegram:</label>
-          <input type="text" id="telegram" name="telegram" required>
-        </div>
-        
-        <div class="order-summary">
-          <p>Итого: ${total} ₽</p>
-          <p class="delivery-cost">Доставка: ${DELIVERY_COST} ₽</p>
-          <p class="total-cost">К оплате: ${total + DELIVERY_COST} ₽</p>
-        </div>
-        
-        <button type="submit" class="confirm-order-btn">Подтвердить заказ</button>
-      </form>
-    </div>
-  `;
-
-  openModal();
-
-  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-      const addressField = document.querySelector('.delivery-address');
-      const deliveryCost = document.querySelector('.delivery-cost');
-      const totalCost = document.querySelector('.total-cost');
-      
-      if (this.value === 'delivery') {
-        addressField.style.display = 'block';
-        deliveryCost.textContent = `Доставка: ${DELIVERY_COST} ₽`;
-        totalCost.textContent = `К оплате: ${total + DELIVERY_COST} ₽`;
-      } else {
-        addressField.style.display = 'none';
-        deliveryCost.textContent = 'Доставка: 0 ₽';
-        totalCost.textContent = `К оплате: ${total} ₽`;
-      }
-    });
-  });
-
-  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    submitOrder(total);
-  });
-}
-
-function submitOrder(itemsTotal) {
-  const form = document.getElementById('checkoutForm');
-  const formData = new FormData(form);
-  
-  const deliveryType = formData.get('delivery');
-  const deliveryCost = deliveryType === 'delivery' ? DELIVERY_COST : 0;
-  const total = itemsTotal + deliveryCost;
-  
-  let orderText = `📦 <b>Новый заказ</b>\n\n`;
-  orderText += `👤 <b>Клиент:</b> ${formData.get('name')}\n`;
-  orderText += `📱 <b>Телефон:</b> ${formData.get('phone')}\n`;
-  orderText += `✈️ <b>Telegram:</b> @${formData.get('telegram').replace('@', '')}\n\n`;
-  
-  orderText += `💳 <b>Способ оплаты:</b> ${formData.get('payment') === 'card' ? 'Перевод на карту' : 'Криптовалюта'}\n`;
-  orderText += `🚚 <b>Доставка:</b> ${deliveryType === 'delivery' ? 
-    `Доставка (${DELIVERY_COST} ₽)\n📍 Адрес: ${formData.get('address')}` : 
-    'Самовывоз'}\n\n`;
-  
-  orderText += `🛍️ <b>Заказ:</b>\n`;
-  state.cart.forEach(item => {
-    orderText += `- ${item.name} (${item.size || 'без размера'}) - ${item.price} ₽\n`;
-  });
-  
-  orderText += `\n💰 <b>Итого:</b> ${itemsTotal} ₽\n`;
-  orderText += `🚚 <b>Доставка:</b> ${deliveryCost} ₽\n`;
-  orderText += `💵 <b>К оплате:</b> ${total} ₽`;
-  
-  tg.sendData(JSON.stringify({
-    action: 'new_order',
-    order: orderText,
-    user: {
-      name: formData.get('name'),
-      phone: formData.get('phone'),
-      telegram: formData.get('telegram')
-    },
-    cart: state.cart,
-    total: total
-  }));
-  
-  state.cart = [];
-  updateCart();
-  closeModal();
-  tg.showAlert('Ваш заказ оформлен! С вами свяжутся для подтверждения.');
-}
-
-function setupEventListeners() {
-  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
-  
-  elements.cartBtn?.addEventListener(clickEvent, (e) => {
-    e.preventDefault();
-    renderCart();
-    openModal();
-  });
-
-  elements.closeCart?.addEventListener(clickEvent, (e) => {
-    e.stopPropagation();
-    closeModal();
-  });
-
-  elements.cartModal?.addEventListener(clickEvent, (e) => {
-    if (e.target === elements.cartModal) {
-      closeModal();
-    }
-  });
-
-  elements.checkoutBtn?.addEventListener(clickEvent, () => {
-    if (state.cart.length === 0) return;
-    showCheckoutForm();
-  });
-
-  elements.searchBtn?.addEventListener('click', searchItems);
-  elements.searchInput?.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') searchItems();
-  });
-}
-
-function openModal() {
+// Модальные окна
+function openModal(content = 'cart') {
+  if (content === 'cart') {
+    renderCartView();
+  } else if (content === 'checkout') {
+    renderCheckoutForm();
+  }
   elements.cartModal.style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
@@ -350,12 +128,218 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
-function searchItems() {
-  if (!state.items.length) {
-    tg.showAlert("Товары ещё не загружены");
+// Просмотр корзины
+function renderCartView() {
+  const total = calculateTotal();
+  
+  elements.cartModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ваша корзина</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="cart-items-list">
+        ${state.cart.map((item, i) => `
+          <div class="cart-item">
+            <img src="${item.image}" width="60" height="60">
+            <div>
+              <h4>${item.name}</h4>
+              <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
+            </div>
+            <button class="remove-item" data-index="${i}">✕</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="cart-footer">
+        <div class="total-price">
+          <span>Итого:</span>
+          <span>${total} ₽</span>
+        </div>
+        <button class="checkout-btn">Оформить заказ</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelector('.close-btn').addEventListener('click', closeModal);
+  document.querySelectorAll('.remove-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      removeFromCart(e.target.dataset.index);
+    });
+  });
+  document.querySelector('.checkout-btn').addEventListener('click', () => {
+    renderCheckoutForm();
+  });
+}
+
+// Форма оформления заказа
+function renderCheckoutForm() {
+  const total = calculateTotal();
+  
+  elements.cartModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <button class="back-btn">← Корзина</button>
+        <h2>Оформление заказа</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-group">
+          <label>Способ оплаты</label>
+          <div class="radio-group">
+            <label><input type="radio" name="payment" value="card" checked> Перевод на карту</label>
+            <label><input type="radio" name="payment" value="crypto"> Криптовалюта</label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Доставка</label>
+          <div class="radio-group">
+            <label><input type="radio" name="delivery" value="delivery" checked> Доставка (${CONFIG.DELIVERY_COST} ₽)</label>
+            <label><input type="radio" name="delivery" value="pickup"> Самовывоз</label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <input type="tel" name="phone" placeholder="Телефон (+7...)" required pattern="^\+7\d{10}$">
+        </div>
+        
+        <div class="form-group">
+          <input type="text" name="name" placeholder="ФИО" required>
+        </div>
+        
+        <div class="form-group delivery-address">
+          <input type="text" name="address" placeholder="Адрес доставки (СДЭК)">
+        </div>
+        
+        <div class="form-group">
+          <input type="text" name="telegram" placeholder="Telegram @username" required>
+        </div>
+        
+        <div class="order-summary">
+          <p>Товары: <span>${total} ₽</span></p>
+          <p class="delivery-fee">Доставка: <span>${CONFIG.DELIVERY_COST} ₽</span></p>
+          <p class="total-price">Итого: <span>${total + CONFIG.DELIVERY_COST} ₽</span></p>
+        </div>
+        
+        <button type="submit" class="submit-btn">Подтвердить заказ</button>
+      </form>
+    </div>
+  `;
+
+  // Восстановление данных формы
+  if (state.formData) {
+    Object.entries(state.formData).forEach(([name, value]) => {
+      const field = document.querySelector(`[name="${name}"]`);
+      if (field) field.value = value;
+    });
+  }
+
+  // Обработчики событий
+  document.querySelector('.back-btn').addEventListener('click', () => {
+    saveFormData();
+    renderCartView();
+  });
+
+  document.querySelector('.close-btn').addEventListener('click', closeModal);
+
+  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const addressField = document.querySelector('.delivery-address');
+      const deliveryFee = document.querySelector('.delivery-fee span');
+      const totalPrice = document.querySelector('.total-price span');
+      
+      if (e.target.value === 'delivery') {
+        addressField.style.display = 'block';
+        deliveryFee.textContent = `${CONFIG.DELIVERY_COST} ₽`;
+        totalPrice.textContent = `${total + CONFIG.DELIVERY_COST} ₽`;
+      } else {
+        addressField.style.display = 'none';
+        deliveryFee.textContent = '0 ₽';
+        totalPrice.textContent = `${total} ₽`;
+      }
+    });
+  });
+
+  document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitOrder();
+  });
+}
+
+function saveFormData() {
+  const form = document.getElementById('checkoutForm');
+  if (!form) return;
+  
+  state.formData = {
+    payment: form.elements.payment.value,
+    delivery: form.elements.delivery.value,
+    phone: form.elements.phone.value,
+    name: form.elements.name.value,
+    address: form.elements.address?.value,
+    telegram: form.elements.telegram.value
+  };
+}
+
+function submitOrder() {
+  const form = document.getElementById('checkoutForm');
+  const formData = new FormData(form);
+  
+  // Валидация телефона
+  const phone = formData.get('phone');
+  if (!/^\+7\d{10}$/.test(phone)) {
+    tg.showAlert("Введите корректный номер телефона (+7XXXXXXXXXX)");
     return;
   }
 
+  // Подготовка данных заказа
+  const deliveryType = formData.get('delivery');
+  const deliveryCost = deliveryType === 'delivery' ? CONFIG.DELIVERY_COST : 0;
+  const total = calculateTotal() + deliveryCost;
+
+  const orderText = `
+📦 <b>Новый заказ</b>
+
+👤 <b>Клиент:</b> ${formData.get('name')}
+📱 <b>Телефон:</b> ${phone}
+✈️ <b>Telegram:</b> @${formData.get('telegram').replace('@', '')}
+
+💳 <b>Оплата:</b> ${formData.get('payment') === 'card' ? 'Карта' : 'Криптовалюта'}
+🚚 <b>Доставка:</b> ${deliveryType === 'delivery' ? `Доставка (${deliveryCost} ₽)` : 'Самовывоз'}
+${deliveryType === 'delivery' ? `📍 <b>Адрес:</b> ${formData.get('address')}\n` : ''}
+
+🛍️ <b>Заказ:</b>
+${state.cart.map(item => `- ${item.name} (${item.size || 'без размера'}) - ${item.price} ₽`).join('\n')}
+
+💰 <b>Итого:</b> ${total} ₽
+  `;
+
+  try {
+    tg.sendData(JSON.stringify({
+      action: 'new_order',
+      order: orderText,
+      user: {
+        name: formData.get('name'),
+        phone: phone,
+        telegram: formData.get('telegram')
+      },
+      cart: state.cart,
+      total: total
+    }));
+
+    // Очистка после успешной отправки
+    state.cart = [];
+    state.formData = null;
+    updateCart();
+    closeModal();
+    tg.showAlert('✅ Заказ оформлен! Ожидайте звонка.');
+  } catch (e) {
+    console.error('Ошибка отправки:', e);
+    tg.showAlert('❌ Ошибка при отправке заказа');
+  }
+}
+
+// Поиск товаров
+function searchItems() {
   const searchTerm = elements.searchInput.value.toLowerCase().trim();
   
   if (!searchTerm) {
@@ -368,32 +352,30 @@ function searchItems() {
     (item.size && item.size.toLowerCase().includes(searchTerm))
   );
 
-  if (filteredItems.length === 0) {
-    elements.itemsContainer.innerHTML = `
-      <div class="no-results">
-        <p>Товары по запросу "${searchTerm}" не найдены</p>
-        <button class="retry-btn">Показать все товары</button>
-      </div>
-    `;
-    document.querySelector('.retry-btn').addEventListener('click', renderItems);
-    return;
-  }
-
   renderItems(filteredItems);
 }
 
+// Настройка обработчиков событий
+function setupEventListeners() {
+  elements.cartBtn.addEventListener('click', () => openModal('cart'));
+  elements.searchBtn.addEventListener('click', searchItems);
+  elements.searchInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') searchItems();
+  });
+}
+
+// Вспомогательные функции
 function showLoading(show) {
   elements.loadingIndicator.style.display = show ? 'flex' : 'none';
 }
 
 function showError(message) {
-  elements.errorContainer.textContent = message;
-  elements.errorContainer.style.display = 'block';
+  const errorContainer = document.getElementById('errorContainer');
+  if (errorContainer) {
+    errorContainer.textContent = message;
+    errorContainer.style.display = 'block';
+  }
 }
 
-window.removeFromCart = removeFromCart;
-
+// Инициализация приложения
 document.addEventListener('DOMContentLoaded', init);
-tg.expand();
-tg.enableClosingConfirmation();
-tg.MainButton.hide();
