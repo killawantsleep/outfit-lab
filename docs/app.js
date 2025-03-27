@@ -3,7 +3,7 @@ const CONFIG = {
   TIMEOUT: 10000
 };
 
-// Улучшенная проверка инициализации WebApp
+// Улучшенная инициализация WebApp
 function initTelegramWebApp() {
   if (!window.Telegram?.WebApp?.initData) {
     document.body.innerHTML = `
@@ -21,16 +21,14 @@ function initTelegramWebApp() {
 
   const tg = window.Telegram.WebApp;
   
-  // Безопасный вызов WebApp методов
   try {
     tg.expand();
     tg.enableClosingConfirmation();
     if (tg.MainButton?.hide) tg.MainButton.hide();
   } catch (e) {
-    console.error("Ошибка инициализации WebApp:", e);
+    console.error("WebApp init error:", e);
   }
 
-  // Фикс для мобильных устройств
   if (tg.isMobile) {
     document.documentElement.classList.add('mobile-telegram');
     setTimeout(() => {
@@ -44,22 +42,15 @@ function initTelegramWebApp() {
 }
 
 const tg = initTelegramWebApp();
-console.log("Telegram WebApp инициализирован:", tg);
+console.log("Telegram WebApp initialized:", tg);
 
 const DELIVERY_COST = 440;
 
 const state = {
   items: [],
-  cart: [],
+  cart: JSON.parse(localStorage.getItem('cart')) || [],
   isLoading: false
 };
-
-try {
-  state.cart = JSON.parse(localStorage.getItem('cart')) || [];
-} catch (e) {
-  console.error('Ошибка чтения корзины:', e);
-  state.cart = [];
-}
 
 const elements = {
   itemsContainer: document.getElementById('itemsContainer'),
@@ -76,32 +67,24 @@ const elements = {
   errorContainer: document.getElementById('errorContainer')
 };
 
-function init() {
-  loadItems();
-  setupEventListeners();
-  updateCart();
-}
-
 async function loadItems() {
   if (state.isLoading) return;
-  
   state.isLoading = true;
   showLoading(true);
 
   try {
     const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error ${response.status}`);
     
     const data = await response.json();
-    
     if (!Array.isArray(data)) throw new Error("Invalid data format");
     
     state.items = data.filter(item => item?.name && !isNaN(item.price));
     renderItems();
   } catch (error) {
     console.error('Load error:', error);
-    tg.showAlert("Ошибка загрузки товаров");
     showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
+    tg.showAlert("Ошибка загрузки товаров");
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -126,9 +109,7 @@ function renderItems(items = state.items) {
 
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
-      const item = items.find(i => 
-        `${i.name}-${i.price}-${i.size}` === this.dataset.id
-      );
+      const item = items.find(i => `${i.name}-${i.price}-${i.size}` === this.dataset.id);
       if (item) addToCart(item);
     });
   });
@@ -185,7 +166,6 @@ function removeFromCart(index) {
   renderCart();
   renderItems();
 }
-
 
 function showCheckoutForm() {
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
@@ -286,7 +266,6 @@ function submitOrder(itemsTotal) {
   const form = document.getElementById('checkoutForm');
   const formData = new FormData(form);
   
-
   const orderData = {
     action: 'new_order',
     user: {
@@ -405,7 +384,10 @@ function showError(message) {
 
 window.removeFromCart = removeFromCart;
 
+function init() {
+  loadItems();
+  setupEventListeners();
+  updateCart();
+}
+
 document.addEventListener('DOMContentLoaded', init);
-tg.expand();
-tg.enableClosingConfirmation();
-tg.MainButton.hide();
