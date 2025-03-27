@@ -19,6 +19,53 @@ if (!window.Telegram?.WebApp?.initData) {
 }
 
 const tg = window.Telegram.WebApp;
+if (tg.isMobile) {
+  document.documentElement.classList.add('mobile-telegram');
+  
+  // Фикс для обновления layout
+  setTimeout(() => {
+    document.body.style.display = 'none';
+    document.body.offsetHeight;
+    document.body.style.display = 'block';
+  }, 100);
+}
+
+// Обновите функцию renderItems():
+function renderItems(items = state.items) {
+  elements.itemsContainer.innerHTML = items.map(item => `
+    <div class="item">
+      <img src="${item.image}" alt="${item.name}" class="item-image" 
+           onerror="this.src='placeholder.jpg';this.onerror=null;">
+      <div class="item-info">
+        <h3 class="item-name">${item.name}</h3>
+        <p class="item-price">${item.price} ₽</p>
+        <p class="item-size">Размер: ${item.size || 'не указан'}</p>
+        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
+                data-id="${item.name}-${item.price}-${item.size || ''}">
+          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  // Фикс для кликов в мобильном Telegram
+  document.querySelectorAll('.buy-button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const itemId = this.dataset.id;
+      const item = items.find(i => 
+        `${i.name}-${i.price}-${i.size || ''}` === itemId
+      );
+      if (item) {
+        addToCart(item);
+        if (tg.isMobile) {
+          // Принудительное обновление кнопки
+          this.classList.add('in-cart');
+          this.textContent = '✓ В корзине';
+        }
+      }
+    });
+  });
+}
 tg.expand();
 tg.enableClosingConfirmation();
 tg.MainButton.hide();
