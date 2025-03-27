@@ -3,32 +3,48 @@ const CONFIG = {
   TIMEOUT: 10000
 };
 
-// Проверка на открытие в Telegram WebApp
-if (!window.Telegram?.WebApp?.initData) {
-  document.body.innerHTML = `
-    <div style="padding:40px;text-align:center;">
-      <h2>Откройте приложение через Telegram</h2>
-      <p>Это мини-приложение работает только внутри Telegram</p>
-      <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
-              style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
-        Открыть в Telegram
-      </button>
-    </div>
-  `;
-  throw new Error("Telegram WebApp not initialized");
+// Улучшенная проверка инициализации WebApp
+function initTelegramWebApp() {
+  if (!window.Telegram?.WebApp?.initData) {
+    document.body.innerHTML = `
+      <div style="padding:40px;text-align:center;">
+        <h2>Откройте приложение через Telegram</h2>
+        <p>Это мини-приложение работает только внутри Telegram</p>
+        <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
+                style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
+          Открыть в Telegram
+        </button>
+      </div>
+    `;
+    throw new Error("Telegram WebApp not initialized");
+  }
+
+  const tg = window.Telegram.WebApp;
+  
+  // Безопасный вызов WebApp методов
+  try {
+    tg.expand();
+    tg.enableClosingConfirmation();
+    if (tg.MainButton?.hide) tg.MainButton.hide();
+  } catch (e) {
+    console.error("Ошибка инициализации WebApp:", e);
+  }
+
+  // Фикс для мобильных устройств
+  if (tg.isMobile) {
+    document.documentElement.classList.add('mobile-telegram');
+    setTimeout(() => {
+      document.body.style.display = 'none';
+      document.body.offsetHeight;
+      document.body.style.display = 'block';
+    }, 100);
+  }
+
+  return tg;
 }
 
-const tg = window.Telegram.WebApp;
-if (tg.isMobile) {
-  document.documentElement.classList.add('mobile-telegram');
-  
-  // Фикс для обновления layout
-  setTimeout(() => {
-    document.body.style.display = 'none';
-    document.body.offsetHeight;
-    document.body.style.display = 'block';
-  }, 100);
-}
+const tg = initTelegramWebApp();
+console.log("Telegram WebApp инициализирован:", tg);
 
 const DELIVERY_COST = 440;
 
@@ -56,7 +72,8 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn')
+  searchBtn: document.getElementById('searchBtn'),
+  errorContainer: document.getElementById('errorContainer')
 };
 
 function init() {
@@ -169,6 +186,7 @@ function removeFromCart(index) {
   renderItems();
 }
 
+
 function showCheckoutForm() {
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
   
@@ -268,10 +286,7 @@ function submitOrder(itemsTotal) {
   const form = document.getElementById('checkoutForm');
   const formData = new FormData(form);
   
-  const deliveryType = formData.get('delivery');
-  const deliveryCost = deliveryType === 'delivery' ? DELIVERY_COST : 0;
-  const total = itemsTotal + deliveryCost;
-  
+
   const orderData = {
     action: 'new_order',
     user: {
@@ -280,20 +295,30 @@ function submitOrder(itemsTotal) {
       telegram: formData.get('telegram').replace('@', '')
     },
     payment: formData.get('payment'),
-    delivery: deliveryType,
-    address: deliveryType === 'delivery' ? formData.get('address') : 'Самовывоз',
+    delivery: formData.get('delivery'),
+    address: formData.get('delivery') === 'delivery' ? formData.get('address') : 'Самовывоз',
     cart: state.cart,
-    total: total
+    total: itemsTotal + (formData.get('delivery') === 'delivery' ? DELIVERY_COST : 0)
   };
   
   console.log('Отправляемые данные:', orderData);
   
-  tg.sendData(JSON.stringify(orderData));
-  
-  state.cart = [];
-  updateCart();
-  closeModal();
-  tg.showAlert('Ваш заказ оформлен! С вами свяжутся для подтверждения.');
+  try {
+    if (typeof tg.sendData !== 'function') {
+      throw new Error('Функция sendData недоступна');
+    }
+    
+    tg.sendData(JSON.stringify(orderData));
+    console.log('Данные успешно отправлены');
+    
+    state.cart = [];
+    updateCart();
+    closeModal();
+    tg.showAlert('✅ Заказ оформлен! С вами свяжутся для подтверждения.');
+  } catch (e) {
+    console.error('Ошибка отправки:', e);
+    tg.showAlert(`⚠️ Ошибка: ${e.message}`);
+  }
 }
 
 function setupEventListeners() {
