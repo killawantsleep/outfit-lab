@@ -30,45 +30,7 @@ if (tg.isMobile) {
   }, 100);
 }
 
-// Обновите функцию renderItems():
-function renderItems(items = state.items) {
-  elements.itemsContainer.innerHTML = items.map(item => `
-    <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" 
-           onerror="this.src='placeholder.jpg';this.onerror=null;">
-      <div class="item-info">
-        <h3 class="item-name">${item.name}</h3>
-        <p class="item-price">${item.price} ₽</p>
-        <p class="item-size">Размер: ${item.size || 'не указан'}</p>
-        <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                data-id="${item.name}-${item.price}-${item.size || ''}">
-          ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
-        </button>
-      </div>
-    </div>
-  `).join('');
-
-  // Фикс для кликов в мобильном Telegram
-  document.querySelectorAll('.buy-button').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const itemId = this.dataset.id;
-      const item = items.find(i => 
-        `${i.name}-${i.price}-${i.size || ''}` === itemId
-      );
-      if (item) {
-        addToCart(item);
-        if (tg.isMobile) {
-          // Принудительное обновление кнопки
-          this.classList.add('in-cart');
-          this.textContent = '✓ В корзине';
-        }
-      }
-    });
-  });
-}
-tg.expand();
-tg.enableClosingConfirmation();
-tg.MainButton.hide();
+const DELIVERY_COST = 440;
 
 const state = {
   items: [],
@@ -207,47 +169,171 @@ function removeFromCart(index) {
   renderItems();
 }
 
+function showCheckoutForm() {
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  
+  elements.cartModal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Оформление заказа</h2>
+        <button id="closeCart" class="close-btn">&times;</button>
+      </div>
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-group">
+          <label>Способ оплаты:</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="payment" value="card" checked>
+              Перевод на карту
+            </label>
+            <label>
+              <input type="radio" name="payment" value="crypto">
+              Оплата криптовалютой
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Способ получения:</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="delivery" value="delivery" checked>
+              Доставка (${DELIVERY_COST} ₽)
+            </label>
+            <label>
+              <input type="radio" name="delivery" value="pickup">
+              Самовывоз (адрес уточнит администратор)
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Контактный телефон (+7...):</label>
+          <input type="tel" id="phone" name="phone" pattern="^\+7\d{10}$" required>
+        </div>
+        
+        <div class="form-group delivery-address">
+          <label for="address">Адрес доставки (СДЭК):</label>
+          <input type="text" id="address" name="address">
+        </div>
+        
+        <div class="form-group">
+          <label for="name">ФИО:</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="telegram">Ваш Telegram:</label>
+          <input type="text" id="telegram" name="telegram" required>
+        </div>
+        
+        <div class="order-summary">
+          <p>Итого: ${total} ₽</p>
+          <p class="delivery-cost">Доставка: ${DELIVERY_COST} ₽</p>
+          <p class="total-cost">К оплате: ${total + DELIVERY_COST} ₽</p>
+        </div>
+        
+        <button type="submit" class="confirm-order-btn">Подтвердить заказ</button>
+      </form>
+    </div>
+  `;
+
+  openModal();
+
+  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const addressField = document.querySelector('.delivery-address');
+      const deliveryCost = document.querySelector('.delivery-cost');
+      const totalCost = document.querySelector('.total-cost');
+      
+      if (this.value === 'delivery') {
+        addressField.style.display = 'block';
+        deliveryCost.textContent = `Доставка: ${DELIVERY_COST} ₽`;
+        totalCost.textContent = `К оплате: ${total + DELIVERY_COST} ₽`;
+      } else {
+        addressField.style.display = 'none';
+        deliveryCost.textContent = 'Доставка: 0 ₽';
+        totalCost.textContent = `К оплате: ${total} ₽`;
+      }
+    });
+  });
+
+  document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitOrder(total);
+  });
+}
+
+function submitOrder(itemsTotal) {
+  const form = document.getElementById('checkoutForm');
+  const formData = new FormData(form);
+  
+  const deliveryType = formData.get('delivery');
+  const deliveryCost = deliveryType === 'delivery' ? DELIVERY_COST : 0;
+  const total = itemsTotal + deliveryCost;
+  
+  let orderText = `📦 <b>Новый заказ</b>\n\n`;
+  orderText += `👤 <b>Клиент:</b> ${formData.get('name')}\n`;
+  orderText += `📱 <b>Телефон:</b> ${formData.get('phone')}\n`;
+  orderText += `✈️ <b>Telegram:</b> @${formData.get('telegram').replace('@', '')}\n\n`;
+  
+  orderText += `💳 <b>Способ оплаты:</b> ${formData.get('payment') === 'card' ? 'Перевод на карту' : 'Криптовалюта'}\n`;
+  orderText += `🚚 <b>Доставка:</b> ${deliveryType === 'delivery' ? 
+    `Доставка (${DELIVERY_COST} ₽)\n📍 Адрес: ${formData.get('address')}` : 
+    'Самовывоз'}\n\n`;
+  
+  orderText += `🛍️ <b>Заказ:</b>\n`;
+  state.cart.forEach(item => {
+    orderText += `- ${item.name} (${item.size || 'без размера'}) - ${item.price} ₽\n`;
+  });
+  
+  orderText += `\n💰 <b>Итого:</b> ${itemsTotal} ₽\n`;
+  orderText += `🚚 <b>Доставка:</b> ${deliveryCost} ₽\n`;
+  orderText += `💵 <b>К оплате:</b> ${total} ₽`;
+  
+  tg.sendData(JSON.stringify({
+    action: 'new_order',
+    order: orderText,
+    user: {
+      name: formData.get('name'),
+      phone: formData.get('phone'),
+      telegram: formData.get('telegram')
+    },
+    cart: state.cart,
+    total: total
+  }));
+  
+  state.cart = [];
+  updateCart();
+  closeModal();
+  tg.showAlert('Ваш заказ оформлен! С вами свяжутся для подтверждения.');
+}
+
 function setupEventListeners() {
   const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
   
-  // Кнопка корзины
   elements.cartBtn?.addEventListener(clickEvent, (e) => {
     e.preventDefault();
     renderCart();
     openModal();
   });
 
-  // Закрытие корзины
   elements.closeCart?.addEventListener(clickEvent, (e) => {
     e.stopPropagation();
     closeModal();
   });
 
-  // Закрытие по клику вне области
   elements.cartModal?.addEventListener(clickEvent, (e) => {
     if (e.target === elements.cartModal) {
       closeModal();
     }
   });
 
-  // Оформление заказа
   elements.checkoutBtn?.addEventListener(clickEvent, () => {
     if (state.cart.length === 0) return;
-    
-    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-    const orderText = state.cart.map(item => 
-      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
-    ).join('\n');
-    
-    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
-    
-    state.cart = [];
-    updateCart();
-    renderItems();
-    closeModal();
+    showCheckoutForm();
   });
 
-  // Поиск
   elements.searchBtn?.addEventListener('click', searchItems);
   elements.searchInput?.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') searchItems();
@@ -305,8 +391,9 @@ function showError(message) {
   elements.errorContainer.style.display = 'block';
 }
 
-// Глобальные функции
 window.removeFromCart = removeFromCart;
 
-// Запуск
 document.addEventListener('DOMContentLoaded', init);
+tg.expand();
+tg.enableClosingConfirmation();
+tg.MainButton.hide();
