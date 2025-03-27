@@ -17,3 +17,8 @@ Traceback (most recent call last):
 ValueError: ❌ Требуется фото товара
 2025-03-27 21:46:00,574 - ERROR - Infinity polling: polling exited
 2025-03-27 21:46:00,575 - ERROR - Break infinity polling
+2025-03-27 21:46:46,451 - INFO - === Бот успешно инициализирован ===
+2025-03-27 21:46:46,452 - INFO - === Бот запущен и готов к работе ===
+2025-03-27 21:47:20,087 - INFO - Пользователь 5000931101 начал работу с ботом
+2025-03-27 21:59:21,138 - ERROR - Infinity polling: polling exited
+2025-03-27 21:59:21,138 - ERROR - Break infinity polling

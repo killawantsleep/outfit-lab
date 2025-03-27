@@ -1,10 +1,9 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 10000,
-  DELIVERY_COST: 440
+  TIMEOUT: 10000
 };
 
-// Инициализация Telegram WebApp
+// Улучшенная инициализация WebApp
 function initTelegramWebApp() {
   if (!window.Telegram?.WebApp?.initData) {
     document.body.innerHTML = `
@@ -44,6 +43,8 @@ function initTelegramWebApp() {
 
 const tg = initTelegramWebApp();
 console.log("Telegram WebApp initialized:", tg);
+
+const DELIVERY_COST = 440;
 
 const state = {
   items: [],
@@ -109,35 +110,21 @@ function renderItems(items = state.items) {
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
       const item = items.find(i => `${i.name}-${i.price}-${i.size}` === this.dataset.id);
-      if (item) toggleCartItem(item);
+      if (item) addToCart(item);
     });
   });
 }
 
-function toggleCartItem(item) {
-  if (isInCart(item)) {
-    removeFromCart(item);
-    tg.showAlert(`"${item.name}" удален из корзины`);
-  } else {
-    addToCart(item);
-    tg.showAlert(`"${item.name}" добавлен в корзину`);
-  }
-}
-
 function addToCart(item) {
+  if (isInCart(item)) {
+    tg.showAlert(`"${item.name}" уже в корзине!`);
+    return;
+  }
+
   state.cart.push(item);
   updateCart();
   renderItems();
-}
-
-function removeFromCart(item) {
-  state.cart = state.cart.filter(cartItem => 
-    !(cartItem.name === item.name && 
-      cartItem.price === item.price && 
-      cartItem.size === item.size)
-  );
-  updateCart();
-  renderItems();
+  tg.showAlert(`"${item.name}" добавлен в корзину`);
 }
 
 function isInCart(item) {
@@ -165,19 +152,19 @@ function renderCart() {
         <h4>${item.name}</h4>
         <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
       </div>
-      <button class="remove-item" data-id="${item.name}-${item.price}-${item.size}">✕</button>
+      <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
 
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
   elements.cartTotal.textContent = `${total} ₽`;
+}
 
-  document.querySelectorAll('.remove-item').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const item = state.cart.find(i => `${i.name}-${i.price}-${i.size}` === this.dataset.id);
-      if (item) removeFromCart(item);
-    });
-  });
+function removeFromCart(index) {
+  state.cart.splice(index, 1);
+  updateCart();
+  renderCart();
+  renderItems();
 }
 
 function showCheckoutForm() {
@@ -209,7 +196,7 @@ function showCheckoutForm() {
           <div class="radio-group">
             <label>
               <input type="radio" name="delivery" value="delivery" checked>
-              Доставка (${CONFIG.DELIVERY_COST} ₽)
+              Доставка (${DELIVERY_COST} ₽)
             </label>
             <label>
               <input type="radio" name="delivery" value="pickup">
@@ -240,8 +227,8 @@ function showCheckoutForm() {
         
         <div class="order-summary">
           <p>Итого: ${total} ₽</p>
-          <p class="delivery-cost">Доставка: ${CONFIG.DELIVERY_COST} ₽</p>
-          <p class="total-cost">К оплате: ${total + CONFIG.DELIVERY_COST} ₽</p>
+          <p class="delivery-cost">Доставка: ${DELIVERY_COST} ₽</p>
+          <p class="total-cost">К оплате: ${total + DELIVERY_COST} ₽</p>
         </div>
         
         <button type="submit" class="confirm-order-btn">Подтвердить заказ</button>
@@ -259,8 +246,8 @@ function showCheckoutForm() {
       
       if (this.value === 'delivery') {
         addressField.style.display = 'block';
-        deliveryCost.textContent = `Доставка: ${CONFIG.DELIVERY_COST} ₽`;
-        totalCost.textContent = `К оплате: ${total + CONFIG.DELIVERY_COST} ₽`;
+        deliveryCost.textContent = `Доставка: ${DELIVERY_COST} ₽`;
+        totalCost.textContent = `К оплате: ${total + DELIVERY_COST} ₽`;
       } else {
         addressField.style.display = 'none';
         deliveryCost.textContent = 'Доставка: 0 ₽';
@@ -279,9 +266,6 @@ function submitOrder(itemsTotal) {
   const form = document.getElementById('checkoutForm');
   const formData = new FormData(form);
   
-  const deliveryType = formData.get('delivery');
-  const deliveryCost = deliveryType === 'delivery' ? CONFIG.DELIVERY_COST : 0;
-  
   const orderData = {
     action: 'new_order',
     user: {
@@ -290,29 +274,26 @@ function submitOrder(itemsTotal) {
       telegram: formData.get('telegram').replace('@', '')
     },
     payment: formData.get('payment'),
-    delivery: deliveryType,
-    address: deliveryType === 'delivery' ? formData.get('address') : 'Самовывоз',
+    delivery: formData.get('delivery'),
+    address: formData.get('delivery') === 'delivery' ? formData.get('address') : 'Самовывоз',
     cart: state.cart,
-    subtotal: itemsTotal,
-    delivery_cost: deliveryCost,
-    total: itemsTotal + deliveryCost,
-    initData: window.Telegram.WebApp.initData
+    total: itemsTotal + (formData.get('delivery') === 'delivery' ? DELIVERY_COST : 0)
   };
   
   console.log('Отправляемые данные:', orderData);
   
   try {
-    if (typeof window.Telegram.WebApp.sendData !== 'function') {
+    if (typeof tg.sendData !== 'function') {
       throw new Error('Функция sendData недоступна');
     }
     
-    window.Telegram.WebApp.sendData(JSON.stringify(orderData));
+    tg.sendData(JSON.stringify(orderData));
+    console.log('Данные успешно отправлены');
     
     state.cart = [];
     updateCart();
     closeModal();
-    
-    window.Telegram.WebApp.close();
+    tg.showAlert('✅ Заказ оформлен! С вами свяжутся для подтверждения.');
   } catch (e) {
     console.error('Ошибка отправки:', e);
     tg.showAlert(`⚠️ Ошибка: ${e.message}`);
@@ -320,28 +301,27 @@ function submitOrder(itemsTotal) {
 }
 
 function setupEventListeners() {
-  elements.cartBtn?.addEventListener('click', (e) => {
+  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
+  
+  elements.cartBtn?.addEventListener(clickEvent, (e) => {
     e.preventDefault();
     renderCart();
     openModal();
   });
 
-  elements.closeCart?.addEventListener('click', (e) => {
+  elements.closeCart?.addEventListener(clickEvent, (e) => {
     e.stopPropagation();
     closeModal();
   });
 
-  elements.cartModal?.addEventListener('click', (e) => {
+  elements.cartModal?.addEventListener(clickEvent, (e) => {
     if (e.target === elements.cartModal) {
       closeModal();
     }
   });
 
-  elements.checkoutBtn?.addEventListener('click', () => {
-    if (state.cart.length === 0) {
-      tg.showAlert("Корзина пуста!");
-      return;
-    }
+  elements.checkoutBtn?.addEventListener(clickEvent, () => {
+    if (state.cart.length === 0) return;
     showCheckoutForm();
   });
 
@@ -362,6 +342,11 @@ function closeModal() {
 }
 
 function searchItems() {
+  if (!state.items.length) {
+    tg.showAlert("Товары ещё не загружены");
+    return;
+  }
+
   const searchTerm = elements.searchInput.value.toLowerCase().trim();
   
   if (!searchTerm) {
@@ -395,10 +380,9 @@ function showLoading(show) {
 function showError(message) {
   elements.errorContainer.textContent = message;
   elements.errorContainer.style.display = 'block';
-  setTimeout(() => {
-    elements.errorContainer.style.display = 'none';
-  }, 5000);
 }
+
+window.removeFromCart = removeFromCart;
 
 function init() {
   loadItems();
