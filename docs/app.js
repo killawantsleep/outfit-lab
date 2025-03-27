@@ -1,28 +1,41 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
   DELIVERY_COST: 440,
+  BOT_TOKEN: "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA",
+  ADMIN_ID: 5000931101,
   TIMEOUT: 10000
 };
 
+// Инициализация WebApp
 function initTelegramWebApp() {
+  console.log("Инициализация WebApp...");
+  
   if (!window.Telegram?.WebApp?.initData) {
-    document.body.innerHTML = `
-      <div style="padding:40px;text-align:center;">
-        <h2>Откройте приложение через Telegram</h2>
-        <p>Это мини-приложение работает только внутри Telegram</p>
-        <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
-                style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
-          Открыть в Telegram
-        </button>
-      </div>
-    `;
+    const errorHtml = `
+    <div style="padding:40px;text-align:center;">
+      <h2>Откройте приложение через Telegram</h2>
+      <p>Это мини-приложение работает только внутри Telegram</p>
+      <button onclick="window.location.href='https://t.me/outfitlaab_bot'" 
+              style="margin-top:20px;padding:10px 20px;background:#6c5ce7;color:white;border:none;border-radius:8px;">
+        Открыть в Telegram
+      </button>
+    </div>`;
+    document.body.innerHTML = errorHtml;
     throw new Error("Telegram WebApp not initialized");
   }
 
   const tg = window.Telegram.WebApp;
-  tg.expand();
-  tg.enableClosingConfirmation();
-  if (tg.MainButton?.hide) tg.MainButton.hide();
+  console.log("WebApp version:", tg.version);
+  
+  try {
+    tg.expand();
+    tg.enableClosingConfirmation();
+    tg.MainButton.hide();
+    console.log("WebApp initialized successfully");
+  } catch (e) {
+    console.error("WebApp init error:", e);
+  }
+
   return tg;
 }
 
@@ -54,7 +67,7 @@ async function loadItems() {
   showLoading(true);
 
   try {
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_items&t=${Date.now()}`);
     if (!response.ok) throw new Error(`HTTP error ${response.status}`);
     
     const data = await response.json();
@@ -75,7 +88,8 @@ async function loadItems() {
 function renderItems(items = state.items) {
   elements.itemsContainer.innerHTML = items.map(item => `
     <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
+      <img src="${item.image || 'placeholder.jpg'}" alt="${item.name}" class="item-image" 
+           onerror="this.src='placeholder.jpg'">
       <div class="item-info">
         <h3>${item.name}</h3>
         <p>${item.price} ₽</p>
@@ -138,7 +152,7 @@ function updateCart() {
 function renderCart() {
   elements.cartItems.innerHTML = state.cart.map((item, index) => `
     <div class="cart-item">
-      <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
+      <img src="${item.image || 'placeholder.jpg'}" width="60" height="60" style="border-radius:8px;">
       <div>
         <h4>${item.name}</h4>
         <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
@@ -241,7 +255,7 @@ function showCheckoutForm() {
   openModal();
 }
 
-function submitOrder(subtotal) {
+async function submitOrder(subtotal) {
   const form = document.getElementById('checkoutForm');
   const formData = new FormData(form);
   
@@ -259,30 +273,84 @@ function submitOrder(subtotal) {
       name: item.name,
       price: item.price,
       size: item.size || 'не указан',
-      image: item.image || 'no-image'
+      image: item.image || ''
     })),
     subtotal: subtotal,
     delivery_cost: formData.get('delivery') === 'delivery' ? CONFIG.DELIVERY_COST : 0,
     total: subtotal + (formData.get('delivery') === 'delivery' ? CONFIG.DELIVERY_COST : 0),
-    initData: window.Telegram.WebApp.initData
+    initData: window.Telegram.WebApp.initData,
+    initDataUnsafe: window.Telegram.WebApp.initDataUnsafe
   };
 
-  console.log('Отправка заказа:', orderData);
-  
+  console.log("Отправка заказа:", orderData);
+
   try {
-    if (typeof window.Telegram.WebApp.sendData !== 'function') {
-      throw new Error('Функция sendData недоступна');
+    // Основной способ
+    if (typeof window.Telegram.WebApp.sendData === 'function') {
+      window.Telegram.WebApp.sendData(JSON.stringify(orderData));
+      console.log("Данные отправлены через WebApp");
+    } else {
+      throw new Error("WebApp.sendData не доступен");
     }
+
+    // Резервный способ
+    await sendOrderFallback(orderData);
     
-    window.Telegram.WebApp.sendData(JSON.stringify(orderData));
-    
+    // Очистка
     state.cart = [];
     updateCart();
     closeModal();
-    window.Telegram.WebApp.close();
+    
+    setTimeout(() => {
+      try {
+        window.Telegram.WebApp.close();
+      } catch (e) {
+        console.log("Не удалось закрыть WebApp:", e);
+      }
+    }, 300);
+    
   } catch (e) {
-    console.error('Ошибка отправки:', e);
-    tg.showAlert(`Ошибка: ${e.message}. Попробуйте еще раз.`);
+    console.error("Ошибка отправки:", e);
+    tg.showAlert(`Ошибка: ${e.message}`);
+    await sendOrderFallback(orderData);
+  }
+}
+
+async function sendOrderFallback(orderData) {
+  console.log("Попытка резервной отправки...");
+  try {
+    // Отправка через Bot API
+    const response = await fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CONFIG.ADMIN_ID,
+        text: `🆘 Резервный заказ!\n${JSON.stringify(orderData, null, 2)}`,
+        parse_mode: 'HTML'
+      })
+    });
+    
+    const result = await response.json();
+    console.log("Fallback результат:", result);
+    return result.ok;
+  } catch (e) {
+    console.error("Ошибка fallback:", e);
+    
+    // Последний способ - через Google Script
+    try {
+      const scriptResponse = await fetch(CONFIG.SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'fallback_order',
+          order: orderData
+        })
+      });
+      console.log("Google Script ответ:", await scriptResponse.text());
+    } catch (scriptError) {
+      console.error("Ошибка Google Script:", scriptError);
+    }
+    
+    return false;
   }
 }
 
