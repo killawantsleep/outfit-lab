@@ -11,101 +11,89 @@ load_dotenv()
 # Инициализация бота
 bot = telebot.TeleBot(os.getenv("BOT_TOKEN"))
 
-# Конфигурация
-CONFIG = {
-    'ADMINS': [5000931101],  # Ваш Telegram ID (убедитесь, что он правильный)
-    'WEB_APP_URL': "https://killawantsleep.github.io/outfit-lab/",
-    'DELIVERY_COST': 440,
-    'GOOGLE_SCRIPT_URL': os.getenv("GOOGLE_SCRIPT_URL")
-}
+class Config:
+    ADMINS = [5000931101]  # Ваш Telegram ID (убедитесь, что он правильный)
+    WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
+    DELIVERY_COST = 440
+    LOG_CHAT_ID = None  # Опционально: ID чата для логов
 
-# ======================
-# КОМАНДА СТАРТ
-# ======================
+def send_to_admins(message, parse_mode="HTML", reply_markup=None):
+    """Отправляет сообщение всем администраторам"""
+    for admin_id in Config.ADMINS:
+        try:
+            bot.send_message(
+                admin_id,
+                message,
+                parse_mode=parse_mode,
+                reply_markup=reply_markup,
+                disable_web_page_preview=True
+            )
+        except Exception as e:
+            print(f"Ошибка отправки сообщения админу {admin_id}: {str(e)}")
+
 @bot.message_handler(commands=['start'])
 def start(message):
     try:
-        # Создаем кнопку для открытия веб-приложения
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton(
             "🛍️ Открыть магазин", 
-            web_app=WebAppInfo(url=CONFIG['WEB_APP_URL'])
+            web_app=WebAppInfo(url=Config.WEB_APP_URL)
         ))
         
-        # Отправляем приветственное сообщение
         bot.send_message(
             message.chat.id,
-            "👋 Добро пожаловать в *OUTFIT LAB*!\n\n"
-            "Нажмите кнопку ниже, чтобы открыть каталог товаров.\n"
-            "Товары обновляются автоматически.",
-            parse_mode="Markdown",
+            "👋 Добро пожаловать в <b>OUTFIT LAB</b>!\n\n"
+            "Нажмите кнопку ниже, чтобы открыть каталог товаров.",
+            parse_mode="HTML",
             reply_markup=markup
         )
-        
-        # Логируем запуск
-        print(f"Пользователь {message.from_user.id} запустил бота")
-        
     except Exception as e:
         print(f"Ошибка в /start: {str(e)}")
-        bot.reply_to(message, "🚫 Произошла ошибка. Попробуйте позже.")
 
-# ======================
-# ДОБАВЛЕНИЕ ТОВАРА (АДМИН)
-# ======================
 @bot.message_handler(commands=['additem'])
 def add_item(message):
     try:
-        # Проверка прав администратора
-        if message.from_user.id not in CONFIG['ADMINS']:
+        if message.from_user.id not in Config.ADMINS:
             return bot.reply_to(message, "❌ Эта команда только для администраторов")
         
-        # Запрашиваем данные о товаре
         msg = bot.send_message(
             message.chat.id,
-            "📤 *Отправьте фото товара с подписью в формате:*\n"
-            "`Название | Цена | Размер`\n\n"
-            "*Пример:*\n"
-            "_Футболка премиум | 1990 | XL_",
-            parse_mode="Markdown"
+            "📤 <b>Отправьте фото товара с подписью в формате:</b>\n"
+            "<code>Название | Цена | Размер</code>\n\n"
+            "<i>Пример:</i>\n"
+            "<i>Футболка премиум | 1990 | XL</i>",
+            parse_mode="HTML"
         )
         bot.register_next_step_handler(msg, process_item)
-        
     except Exception as e:
         print(f"Ошибка в /additem: {str(e)}")
-        bot.reply_to(message, "🚫 Ошибка обработки команды")
 
 def process_item(message):
     try:
-        # Проверка фото
         if not message.photo:
             raise ValueError("❌ Требуется фото товара")
         
-        # Проверка описания
         if not message.caption:
             raise ValueError("❌ Требуется описание товара")
         
-        # Парсинг данных
         parts = [p.strip() for p in message.caption.split('|')]
         if len(parts) < 3:
             raise ValueError("❌ Неверный формат. Используйте: Название | Цена | Размер")
         
         name, price, size = parts[:3]
         
-        # Валидация цены
         try:
             price = float(price.replace(',', '.'))
             if price <= 0:
-                raise ValueError("Цена должна быть больше нуля")
+                raise ValueError("❌ Цена должна быть больше нуля")
         except ValueError:
             raise ValueError("❌ Некорректная цена. Используйте числа")
         
-        # Получаем URL фото
         file_info = bot.get_file(message.photo[-1].file_id)
         image_url = f"https://api.telegram.org/file/bot{bot.token}/{file_info.file_path}"
         
-        # Отправляем в Google Script
         response = requests.post(
-            CONFIG['GOOGLE_SCRIPT_URL'],
+            os.getenv("GOOGLE_SCRIPT_URL"),
             json={
                 'name': name,
                 'price': price,
@@ -118,54 +106,45 @@ def process_item(message):
         if response.status_code != 200:
             raise ValueError(f"❌ Ошибка сохранения: {response.text}")
         
-        # Уведомляем об успехе
         bot.reply_to(
             message,
-            f"✅ *{name}* успешно добавлен!\n"
+            f"✅ <b>{name}</b> успешно добавлен!\n"
             f"• Цена: {price} ₽\n"
             f"• Размер: {size}",
-            parse_mode="Markdown"
+            parse_mode="HTML"
         )
-        
-        print(f"Добавлен товар: {name} ({price} ₽)")
-        
     except Exception as e:
         bot.reply_to(message, str(e))
         print(f"Ошибка добавления товара: {str(e)}")
 
-# ======================
-# ОБРАБОТКА ЗАКАЗОВ ИЗ WEBAPP
-# ======================
 @bot.message_handler(content_types=['web_app_data'])
 def handle_web_app_data(message):
     try:
-        print(f"\n=== Получен новый заказ ===\nОт: {message.from_user.id}\nДанные: {message.web_app_data.data}\n")
+        print(f"\n=== Получены данные от {message.from_user.id} ===\n{message.web_app_data.data}\n")
         
         data = json.loads(message.web_app_data.data)
         
-        # Проверяем тип действия
         if data.get('action') != 'new_order':
-            raise ValueError("Неизвестное действие")
-        
+            return
+            
         # Формируем сообщение для админа
-        admin_message = (
-            "🛒 *НОВЫЙ ЗАКАЗ*\n\n"
-            f"• Клиент: [{data['user']['name']}](tg://user?id={message.from_user.id})\n"
-            f"• Телефон: `{data['user']['phone']}`\n"
-            f"• Telegram: @{data['user']['telegram'].replace('@', '')}\n\n"
-            f"*Способ оплаты:* {data.get('payment', 'не указан')}\n"
-            f"*Доставка:* {'Самовывоз' if data.get('delivery') == 'pickup' else f'Доставка ({CONFIG["DELIVERY_COST"]} ₽)'}\n"
-            f"*Адрес:* {data.get('address', 'не указан')}\n\n"
-            "*Товары:*\n"
+        admin_msg = (
+            "🛒 <b>НОВЫЙ ЗАКАЗ</b>\n\n"
+            f"👤 <b>Клиент:</b> {data['user']['name']}\n"
+            f"📱 <b>Телефон:</b> {data['user']['phone']}\n"
+            f"✈️ <b>Telegram:</b> @{data['user']['telegram'].replace('@', '')}\n\n"
+            f"💳 <b>Оплата:</b> {'Карта' if data.get('payment') == 'card' else 'Крипта'}\n"
+            f"🚚 <b>Доставка:</b> {'Самовывоз' if data.get('delivery') == 'pickup' else f'Доставка ({Config.DELIVERY_COST}₽)'}\n"
+            f"📍 <b>Адрес:</b> {data.get('address', 'не указан')}\n\n"
+            "<b>Товары:</b>\n"
         )
         
-        # Добавляем товары
         for item in data['cart']:
-            admin_message += f"├ {item['name']} ({item.get('size', 'без размера')}) - {item['price']} ₽\n"
+            admin_msg += f"• {item['name']} ({item.get('size', 'без размера')}) - {item['price']}₽\n"
         
-        admin_message += f"\n💰 *Итого к оплате:* {data['total']} ₽"
+        admin_msg += f"\n💰 <b>Итого:</b> {data['total']}₽"
         
-        # Создаем кнопки для админа
+        # Кнопки для быстрого ответа
         markup = InlineKeyboardMarkup()
         markup.row(
             InlineKeyboardButton(
@@ -178,102 +157,39 @@ def handle_web_app_data(message):
             )
         )
         
-        # Отправляем всем админам
-        for admin_id in CONFIG['ADMINS']:
-            try:
-                bot.send_message(
-                    admin_id,
-                    admin_message,
-                    parse_mode="Markdown",
-                    reply_markup=markup,
-                    disable_web_page_preview=True
-                )
-                print(f"Уведомление отправлено admin {admin_id}")
-            except Exception as e:
-                print(f"Ошибка отправки admin {admin_id}: {str(e)}")
+        # Отправляем админам
+        send_to_admins(admin_msg, reply_markup=markup)
         
-        # Подтверждаем пользователю
+        # Подтверждение пользователю
         bot.send_message(
             message.chat.id,
-            "✅ *Ваш заказ оформлен!*\n\n"
-            "Администратор свяжется с вами в ближайшее время для подтверждения.\n\n"
-            "ℹ️ Для вопросов: @outfitlaab_bot",
-            parse_mode="Markdown"
+            "✅ <b>Заказ оформлен!</b>\n\n"
+            "Администратор свяжется с вами в течение 15 минут.",
+            parse_mode="HTML"
         )
-        
-        print(f"Заказ от {message.from_user.id} успешно обработан")
-        
     except Exception as e:
-        print(f"Критическая ошибка: {str(e)}")
-        
-        # Отправляем ошибку админам
-        for admin_id in CONFIG['ADMINS']:
-            try:
-                bot.send_message(
-                    admin_id,
-                    f"🚨 *Ошибка обработки заказа*\n\n"
-                    f"От: {message.from_user.id}\n"
-                    f"Ошибка: {str(e)}\n\n"
-                    f"Данные: {message.web_app_data.data}",
-                    parse_mode="Markdown"
-                )
-            except:
-                pass
-        
-        # Сообщение пользователю
+        error_msg = f"🚨 <b>Ошибка обработки заказа</b>\n\n{str(e)}"
+        print(error_msg)
+        send_to_admins(error_msg)
         bot.send_message(
             message.chat.id,
-            "⚠️ *Произошла ошибка при оформлении заказа*\n\n"
-            "Пожалуйста, свяжитесь с нами напрямую через @outfitlaab_bot",
-            parse_mode="Markdown"
+            "⚠️ Произошла ошибка. Пожалуйста, свяжитесь с нами через @outfitlaab_bot",
+            parse_mode="HTML"
         )
 
-# ======================
-# ТЕСТИРОВАНИЕ
-# ======================
 @bot.message_handler(commands=['test'])
-def test_bot(message):
+def test_command(message):
+    """Тестовая команда для проверки работы бота"""
+    if message.from_user.id not in Config.ADMINS:
+        return
+        
     try:
-        # Проверка прав
-        if message.from_user.id not in CONFIG['ADMINS']:
-            return bot.reply_to(message, "❌ Только для админов")
-        
-        # Проверка отправки сообщений
-        bot.reply_to(message, "🔄 Тестирование...")
-        
-        # Проверка уведомлений
-        for admin_id in CONFIG['ADMINS']:
-            try:
-                bot.send_message(
-                    admin_id,
-                    "🔔 *Тестовое уведомление*\n\n"
-                    "Бот работает корректно!",
-                    parse_mode="Markdown"
-                )
-            except Exception as e:
-                bot.reply_to(message, f"❌ Ошибка отправки admin {admin_id}: {str(e)}")
-                return
-        
-        bot.reply_to(message, "✅ Все тесты пройдены успешно!")
-        
+        test_msg = "🔔 <b>Тестовое уведомление</b>\n\nБот работает корректно!"
+        send_to_admins(test_msg)
+        bot.reply_to(message, "✅ Тестовые уведомления отправлены администраторам", parse_mode="HTML")
     except Exception as e:
-        bot.reply_to(message, f"🚫 Ошибка тестирования: {str(e)}")
+        bot.reply_to(message, f"❌ Ошибка: {str(e)}", parse_mode="HTML")
 
-# ======================
-# ЗАПУСК БОТА
-# ======================
 if __name__ == '__main__':
-    print("====== BOT STARTED ======")
-    print(f"Admins: {CONFIG['ADMINS']}")
-    print(f"WebApp URL: {CONFIG['WEB_APP_URL']}")
-    
-    try:
-        bot.infinity_polling()
-    except Exception as e:
-        print(f"FATAL ERROR: {str(e)}")
-        # Уведомляем админов о падении бота
-        for admin_id in CONFIG['ADMINS']:
-            try:
-                bot.send_message(admin_id, f"🚨 Бот упал с ошибкой: {str(e)}")
-            except:
-                pass
+    print("Бот запущен и готов к работе!")
+    bot.infinity_polling()
