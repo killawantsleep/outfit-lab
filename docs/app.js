@@ -272,36 +272,23 @@ function submitOrder(itemsTotal) {
   const deliveryCost = deliveryType === 'delivery' ? DELIVERY_COST : 0;
   const total = itemsTotal + deliveryCost;
   
-  let orderText = `📦 <b>Новый заказ</b>\n\n`;
-  orderText += `👤 <b>Клиент:</b> ${formData.get('name')}\n`;
-  orderText += `📱 <b>Телефон:</b> ${formData.get('phone')}\n`;
-  orderText += `✈️ <b>Telegram:</b> @${formData.get('telegram').replace('@', '')}\n\n`;
-  
-  orderText += `💳 <b>Способ оплаты:</b> ${formData.get('payment') === 'card' ? 'Перевод на карту' : 'Криптовалюта'}\n`;
-  orderText += `🚚 <b>Доставка:</b> ${deliveryType === 'delivery' ? 
-    `Доставка (${DELIVERY_COST} ₽)\n📍 Адрес: ${formData.get('address')}` : 
-    'Самовывоз'}\n\n`;
-  
-  orderText += `🛍️ <b>Заказ:</b>\n`;
-  state.cart.forEach(item => {
-    orderText += `- ${item.name} (${item.size || 'без размера'}) - ${item.price} ₽\n`;
-  });
-  
-  orderText += `\n💰 <b>Итого:</b> ${itemsTotal} ₽\n`;
-  orderText += `🚚 <b>Доставка:</b> ${deliveryCost} ₽\n`;
-  orderText += `💵 <b>К оплате:</b> ${total} ₽`;
-  
-  tg.sendData(JSON.stringify({
+  const orderData = {
     action: 'new_order',
-    order: orderText,
     user: {
       name: formData.get('name'),
       phone: formData.get('phone'),
-      telegram: formData.get('telegram')
+      telegram: formData.get('telegram').replace('@', '')
     },
+    payment: formData.get('payment'),
+    delivery: deliveryType,
+    address: deliveryType === 'delivery' ? formData.get('address') : 'Самовывоз',
     cart: state.cart,
     total: total
-  }));
+  };
+  
+  console.log('Отправляемые данные:', orderData);
+  
+  tg.sendData(JSON.stringify(orderData));
   
   state.cart = [];
   updateCart();
