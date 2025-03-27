@@ -488,36 +488,3 @@ body {
     max-height: 85vh;
   }
 } 
-/* Фиксы для мобильного Telegram */
-.mobile-telegram .item-info,
-.mobile-telegram .item-info * {
-  opacity: 1 !important;
-  visibility: visible !important;
-  position: relative !important;
-  z-index: 1 !important;
-  color: inherit !important;
-  display: block !important;
-}
-
-/* Гарантированное отображение текста */
-.item-info {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Фикс для кнопок в мобильном Telegram */
-.buy-button {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  position: relative;
-  z-index: 2;
-}
-
-/* Особые стили для WebView Android */
-@supports (-webkit-touch-callout: none) {
-  .item-info > * {
-    transform: translateZ(0);
-  }
-}

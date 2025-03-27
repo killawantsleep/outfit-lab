@@ -1,6 +1,6 @@
 const CONFIG = {
   SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
-  TIMEOUT: 10000
+  TIMEOUT: 15000
 };
 
 // Проверка на открытие в Telegram WebApp
@@ -23,10 +23,24 @@ tg.expand();
 tg.enableClosingConfirmation();
 tg.MainButton.hide();
 
+// Добавляем класс для мобильного Telegram
+if (tg.isMobile) {
+  document.documentElement.classList.add('mobile-telegram');
+  console.log("Running in mobile Telegram WebView");
+  
+  // Фикс для обновления layout в мобильном WebView
+  setTimeout(() => {
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Trigger reflow
+    document.body.style.display = 'block';
+  }, 100);
+}
+
 const state = {
   items: [],
   cart: [],
-  isLoading: false
+  isLoading: false,
+  error: null
 };
 
 try {
@@ -47,35 +61,66 @@ const elements = {
   checkoutBtn: document.getElementById('checkoutBtn'),
   loadingIndicator: document.getElementById('loadingIndicator'),
   searchInput: document.getElementById('searchInput'),
-  searchBtn: document.getElementById('searchBtn')
+  searchBtn: document.getElementById('searchBtn'),
+  errorContainer: document.getElementById('errorContainer')
 };
 
 function init() {
-  loadItems();
   setupEventListeners();
   updateCart();
+  loadItems();
 }
 
 async function loadItems() {
   if (state.isLoading) return;
   
   state.isLoading = true;
+  state.error = null;
   showLoading(true);
+  clearError();
 
   try {
-    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+    
+    const response = await fetch(`${CONFIG.SCRIPT_URL}?t=${Date.now()}`, {
+      signal: controller.signal,
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    clearTimeout(timeoutId);
+
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
+    console.log("Received data:", data);
     
     if (!Array.isArray(data)) throw new Error("Invalid data format");
     
-    state.items = data.filter(item => item?.name && !isNaN(item.price));
-    renderItems();
+    state.items = data.map(item => ({
+      name: String(item.name || '').trim() || 'Без названия',
+      price: Number(item.price) || 0,
+      size: String(item.size || 'не указан').trim(),
+      image: String(item.image || 'placeholder.jpg').trim()
+    })).filter(item => item.name !== 'Без названия');
+    
+    if (state.items.length === 0) {
+      showError("Нет доступных товаров");
+    } else {
+      renderItems();
+    }
   } catch (error) {
     console.error('Load error:', error);
-    tg.showAlert("Ошибка загрузки товаров");
-    showError("Ошибка загрузки товаров. Пожалуйста, попробуйте позже.");
+    state.error = error;
+    showError(`Ошибка загрузки: ${error.message}`);
+    
+    elements.itemsContainer.innerHTML = `
+      <div class="error-container">
+        <p>${error.message}</p>
+        <button onclick="loadItems()" class="retry-btn">Попробовать снова</button>
+      </div>
+    `;
   } finally {
     state.isLoading = false;
     showLoading(false);
@@ -83,27 +128,46 @@ async function loadItems() {
 }
 
 function renderItems(items = state.items) {
+  if (items.length === 0) {
+    elements.itemsContainer.innerHTML = `
+      <div class="no-items">
+        <p>Товары не найдены</p>
+        <button onclick="loadItems()" class="retry-btn">Попробовать снова</button>
+      </div>
+    `;
+    return;
+  }
+
   elements.itemsContainer.innerHTML = items.map(item => `
     <div class="item">
-      <img src="${item.image}" alt="${item.name}" class="item-image" onerror="this.src='placeholder.jpg'">
+      <img src="${item.image}" alt="${item.name}" class="item-image" 
+           onerror="this.src='placeholder.jpg';this.onerror=null;">
       <div class="item-info">
-        <h3>${item.name}</h3>
-        <p>${item.price} ₽</p>
-        <p>Размер: ${item.size || 'не указан'}</p>
+        <h3 class="item-name">${item.name}</h3>
+        <p class="item-price">${item.price.toFixed(2)} ₽</p>
+        <p class="item-size">Размер: ${item.size}</p>
         <button class="buy-button ${isInCart(item) ? 'in-cart' : ''}" 
-                data-id="${item.name}-${item.price}-${item.size}">
+                data-id="${encodeURIComponent(item.name)}-${item.price}-${encodeURIComponent(item.size)}">
           ${isInCart(item) ? '✓ В корзине' : 'В корзину'}
         </button>
       </div>
     </div>
   `).join('');
 
+  // Фикс для кликов в мобильном Telegram
   document.querySelectorAll('.buy-button').forEach(btn => {
     btn.addEventListener('click', function() {
       const item = items.find(i => 
-        `${i.name}-${i.price}-${i.size}` === this.dataset.id
+        `${encodeURIComponent(i.name)}-${i.price}-${encodeURIComponent(i.size)}` === this.dataset.id
       );
-      if (item) addToCart(item);
+      if (item) {
+        addToCart(item);
+        // Фикс для обновления UI в мобильном WebView
+        if (tg.isMobile) {
+          this.classList.add('in-cart');
+          this.textContent = '✓ В корзине';
+        }
+      }
     });
   });
 }
@@ -143,14 +207,14 @@ function renderCart() {
       <img src="${item.image}" width="60" height="60" style="border-radius:8px;">
       <div>
         <h4>${item.name}</h4>
-        <p>${item.price} ₽ • ${item.size || 'без размера'}</p>
+        <p>${item.price.toFixed(2)} ₽ • ${item.size}</p>
       </div>
       <button class="remove-item" onclick="removeFromCart(${index})">✕</button>
     </div>
   `).join('');
 
   const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-  elements.cartTotal.textContent = `${total} ₽`;
+  elements.cartTotal.textContent = `${total.toFixed(2)} ₽`;
 }
 
 function removeFromCart(index) {
@@ -161,50 +225,51 @@ function removeFromCart(index) {
 }
 
 function setupEventListeners() {
-  const clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
+  // Фикс для кликов в мобильном Telegram
+  const eventType = tg.isMobile ? 'touchend' : 'click';
   
-  // Кнопка корзины
-  elements.cartBtn?.addEventListener(clickEvent, (e) => {
-    e.preventDefault();
+  elements.cartBtn?.addEventListener(eventType, () => {
     renderCart();
     openModal();
   });
 
-  // Закрытие корзины
-  elements.closeCart?.addEventListener(clickEvent, (e) => {
-    e.stopPropagation();
-    closeModal();
-  });
-
-  // Закрытие по клику вне области
-  elements.cartModal?.addEventListener(clickEvent, (e) => {
-    if (e.target === elements.cartModal) {
-      closeModal();
-    }
-  });
-
-  // Оформление заказа
-  elements.checkoutBtn?.addEventListener(clickEvent, () => {
-    if (state.cart.length === 0) return;
-    
-    const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
-    const orderText = state.cart.map(item => 
-      `• ${item.name} - ${item.price} ₽ (${item.size || 'без размера'})`
-    ).join('\n');
-    
-    tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total} ₽`);
-    
-    state.cart = [];
-    updateCart();
-    renderItems();
-    closeModal();
-  });
-
-  // Поиск
-  elements.searchBtn?.addEventListener('click', searchItems);
-  elements.searchInput?.addEventListener('keyup', (e) => {
+  elements.closeCart?.addEventListener(eventType, closeModal);
+  elements.checkoutBtn?.addEventListener(eventType, checkout);
+  elements.searchBtn?.addEventListener(eventType, searchItems);
+  
+  elements.searchInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') searchItems();
   });
+
+  elements.cartModal?.addEventListener(eventType, (e) => {
+    if (e.target === elements.cartModal) closeModal();
+  });
+}
+
+function checkout() {
+  if (state.cart.length === 0) return;
+  
+  const total = state.cart.reduce((sum, item) => sum + Number(item.price), 0);
+  const orderText = state.cart.map(item => 
+    `• ${item.name} - ${item.price.toFixed(2)} ₽ (${item.size})`
+  ).join('\n');
+  
+  tg.showAlert(`Ваш заказ:\n\n${orderText}\n\nИтого: ${total.toFixed(2)} ₽`);
+  state.cart = [];
+  updateCart();
+  renderItems();
+  closeModal();
+}
+
+function searchItems() {
+  const term = elements.searchInput.value.toLowerCase().trim();
+  if (!term) return renderItems();
+  
+  const filtered = state.items.filter(item => 
+    item.name.toLowerCase().includes(term) || 
+    item.size.toLowerCase().includes(term)
+  );
+  renderItems(filtered.length > 0 ? filtered : []);
 }
 
 function openModal() {
@@ -217,49 +282,24 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
-function searchItems() {
-  if (!state.items.length) {
-    tg.showAlert("Товары ещё не загружены");
-    return;
-  }
-
-  const searchTerm = elements.searchInput.value.toLowerCase().trim();
-  
-  if (!searchTerm) {
-    renderItems();
-    return;
-  }
-
-  const filteredItems = state.items.filter(item => 
-    item.name.toLowerCase().includes(searchTerm) || 
-    (item.size && item.size.toLowerCase().includes(searchTerm))
-  );
-
-  if (filteredItems.length === 0) {
-    elements.itemsContainer.innerHTML = `
-      <div class="no-results">
-        <p>Товары по запросу "${searchTerm}" не найдены</p>
-        <button class="retry-btn">Показать все товары</button>
-      </div>
-    `;
-    document.querySelector('.retry-btn').addEventListener('click', renderItems);
-    return;
-  }
-
-  renderItems(filteredItems);
-}
-
 function showLoading(show) {
   elements.loadingIndicator.style.display = show ? 'flex' : 'none';
 }
 
 function showError(message) {
-  elements.errorContainer.textContent = message;
+  elements.errorContainer.innerHTML = `
+    <p>${message}</p>
+    <button onclick="loadItems()" class="retry-btn">Попробовать снова</button>
+  `;
   elements.errorContainer.style.display = 'block';
+}
+
+function clearError() {
+  elements.errorContainer.style.display = 'none';
 }
 
 // Глобальные функции
 window.removeFromCart = removeFromCart;
+window.loadItems = loadItems;
 
-// Запуск
 document.addEventListener('DOMContentLoaded', init);
