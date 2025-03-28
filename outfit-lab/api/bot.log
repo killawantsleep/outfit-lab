@@ -294,3 +294,53 @@ ValueError: ❌ Требуется фото товара
 2025-03-28 14:08:22,130 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
 2025-03-28 14:08:25,141 - ERROR - Infinity polling: polling exited
 2025-03-28 14:08:25,141 - ERROR - Break infinity polling
+2025-03-28 20:58:43,022 - INFO - Бот инициализирован
+2025-03-28 20:58:43,023 - INFO - === Бот запущен ===
+2025-03-28 20:58:43,029 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 20:58:43,295 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getMe HTTP/1.1" 200 252
+2025-03-28 20:58:43,298 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 20:59:02,794 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=1&timeout=20 HTTP/1.1" 200 354
+2025-03-28 20:59:02,798 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 20:59:03,120 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+308%7D HTTP/1.1" 200 1116
+2025-03-28 20:59:03,121 - INFO - Админ начал добавление товара
+2025-03-28 20:59:22,878 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788817&timeout=20 HTTP/1.1" 200 23
+2025-03-28 20:59:42,975 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788817&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:00:03,055 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788817&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:00:23,148 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788817&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:00:33,028 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788817&timeout=20 HTTP/1.1" 200 18463
+2025-03-28 21:00:33,030 - ERROR - Ошибка добавления: Отправьте фото товара
+2025-03-28 21:00:33,168 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%E2%9D%8C+%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%3A+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0&reply_parameters=%7B%22message_id%22%3A+310%7D HTTP/1.1" 200 1056
+2025-03-28 21:00:37,637 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788841&timeout=20 HTTP/1.1" 200 354
+2025-03-28 21:00:37,764 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+335%7D HTTP/1.1" 200 1116
+2025-03-28 21:00:37,765 - INFO - Админ начал добавление товара
+2025-03-28 21:00:57,722 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788842&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:01:17,804 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788842&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:01:20,719 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788842&timeout=20 HTTP/1.1" 200 1046
+2025-03-28 21:01:20,723 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 21:01:20,987 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getFile?file_id=AgACAgIAAxkBAAIBUWfm4_COd7ta8OQHbHFjmu9hI2DOAAKQ6zEbAuA4S_hvTqQP27_3AQADAgADeQADNgQ HTTP/1.1" 200 206
+2025-03-28 21:01:20,989 - DEBUG - Starting new HTTPS connection (1): script.google.com:443
+2025-03-28 21:01:22,441 - DEBUG - https://script.google.com:443 "POST /macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec HTTP/1.1" 302 None
+2025-03-28 21:01:22,446 - DEBUG - Starting new HTTPS connection (1): script.googleusercontent.com:443
+2025-03-28 21:01:22,847 - DEBUG - https://script.googleusercontent.com:443 "GET /macros/echo?user_content_key=AehSKLgVsP3XsdHMFKW3NiC82DdfHB4cEPB4s_q3P_TmOVRUGmrv1QsrDdy3sZKdCRCSxNCqtNMUvEs13hCVP-D7fDcl_BrssWcf7R-wQqwI8u9GrBTGAfjw66DkOCHsFkosC3XqiTjwc5h2V19GPI5L9lcYkgxd7QmXA5e8l0w9h07zZz2Yn6AgT6zqdOxdoa4pu28yxoMZHOtyeZC2W8p8fp3Ca2Gt5NfLeqVhW88-VBelRxIYJL1uGcXJ25naWwVICvsTt4zT02V5My10p3y4lCwQhVtV9tho1syh6mVd&lib=MT3W8i3q4F6IScp1PzrPF9Qv2pg-rRWl1 HTTP/1.1" 200 None
+2025-03-28 21:01:23,062 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%E2%9C%85+%D0%A2%D0%BE%D0%B2%D0%B0%D1%80+%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%21%0A%0A%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%3A+%3Cb%3ESUPERSTAR+Golden+Goose%3C%2Fb%3E%0A%D0%A6%D0%B5%D0%BD%D0%B0%3A+%3Cb%3E12499.0+%E2%82%BD%3C%2Fb%3E%0A%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3A+%3Cb%3E39%2C40%3C%2Fb%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+337%7D HTTP/1.1" 200 1633
+2025-03-28 21:01:23,063 - INFO - Добавлен товар: SUPERSTAR Golden Goose
+2025-03-28 21:01:36,052 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788843&timeout=20 HTTP/1.1" 200 354
+2025-03-28 21:01:36,167 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+339%7D HTTP/1.1" 200 1116
+2025-03-28 21:01:36,169 - INFO - Админ начал добавление товара
+2025-03-28 21:01:56,134 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:02:16,215 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:02:36,305 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:02:56,384 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:03:16,465 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:03:36,546 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:03:56,626 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:04:16,706 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:04:36,786 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:04:56,866 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:05:16,947 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:05:37,028 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:05:57,112 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:06:17,192 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:06:37,272 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788844&timeout=20 HTTP/1.1" 200 23
+2025-03-28 21:06:46,301 - ERROR - Infinity polling: polling exited
+2025-03-28 21:06:46,302 - ERROR - Break infinity polling

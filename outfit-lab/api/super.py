@@ -60,8 +60,8 @@ def add_item(message):
         msg = bot.reply_to(
             message,
             "📤 Отправьте фото товара с подписью в формате:\n"
-            "<code>Название | Цена | Размер</code>\n\n"
-            "Пример: <code>Футболка Oversize | 1990 | XL</code>",
+            "<code>Название | Цена | Размер1, Размер2, ...</code>\n\n"
+            "Пример: <code>Футболка Oversize | 1990 | XS, S, M, L, XL</code>",
             parse_mode="HTML"
         )
         bot.register_next_step_handler(msg, process_item)
@@ -76,45 +76,52 @@ def process_item(message):
             raise ValueError("Отправьте фото товара")
 
         if not message.caption:
-            raise ValueError("Добавьте описание в формате: Название | Цена | Размер")
+            raise ValueError("Добавьте описание в формате: Название | Цена | Размер1, Размер2, ...")
 
         parts = [part.strip() for part in message.caption.split('|')]
         if len(parts) < 3:
-            raise ValueError("Неверный формат. Нужно: Название | Цена | Размер")
+            raise ValueError("Неверный формат. Нужно: Название | Цена | Размеры")
 
-        name, price, size = parts[:3]
+        name, price = parts[:2]
         price = float(price.replace(',', '.').strip())
+        
+        # Обработка размеров
+        sizes = [size.strip() for size in parts[2].split(',') if size.strip()]
+        if not sizes:
+            raise ValueError("Укажите хотя бы один размер")
         
         # Получаем URL фото
         file_info = bot.get_file(message.photo[-1].file_id)
         image_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
 
-        # Отправляем в Google Sheets
-        response = requests.post(
-            SCRIPT_URL,
-            json={
-                'action': 'add_item',
-                'name': name,
-                'price': price,
-                'size': size,
-                'image': image_url
-            },
-            timeout=10
-        )
+        # Отправляем в Google Sheets для каждого размера
+        for size in sizes:
+            response = requests.post(
+                SCRIPT_URL,
+                json={
+                    'action': 'add_item',
+                    'name': name,
+                    'price': price,
+                    'size': size,
+                    'image': image_url
+                },
+                timeout=10
+            )
 
-        if response.status_code != 200:
-            raise ValueError(f"Ошибка Google Script: {response.text}")
+            if response.status_code != 200:
+                raise ValueError(f"Ошибка Google Script для размера {size}: {response.text}")
 
         # Успешное добавление
+        sizes_text = ", ".join(f"<b>{size}</b>" for size in sizes)
         bot.reply_to(
             message,
             f"✅ Товар добавлен!\n\n"
             f"Название: <b>{name}</b>\n"
             f"Цена: <b>{price} ₽</b>\n"
-            f"Размер: <b>{size}</b>",
+            f"Размеры: {sizes_text}",
             parse_mode="HTML"
         )
-        logger.info(f"Добавлен товар: {name}")
+        logger.info(f"Добавлен товар: {name} с размерами: {sizes}")
 
     except ValueError as e:
         logger.error(f"Ошибка добавления: {e}")
@@ -123,6 +130,7 @@ def process_item(message):
         logger.critical(f"Критическая ошибка: {e}", exc_info=True)
         bot.reply_to(message, "❌ Произошла системная ошибка")
 
+# Остальные функции остаются без изменений
 @bot.message_handler(content_types=['web_app_data'])
 def handle_web_app_data(message):
     try:
@@ -229,4 +237,4 @@ if __name__ == '__main__':
         bot.infinity_polling()
     except Exception as e:
         logger.critical(f"Бот упал: {e}", exc_info=True)
-        log_to_admin(f"🛑 Бот остановлен:\n<code>{e}</code>")
+        log_to_admin(f"🛑 Бот остановлен:\n<code>{e}</code>") 
