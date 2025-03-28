@@ -365,18 +365,32 @@ function closeModal() {
 }
 
 function searchItems() {
-  const searchTerm = elements.searchInput.value.toLowerCase().trim();
+  const searchTerm = elements.searchInput.value.trim().toLowerCase();
   
+  // Если строка поиска пустая, показываем все товары
   if (!searchTerm) {
     renderItems();
     return;
   }
 
-  const filteredItems = state.items.filter(item => 
-    item.name.toLowerCase().includes(searchTerm) || 
-    (item.size && item.size.toLowerCase().includes(searchTerm))
-  );
+  // Разбиваем поисковый запрос на отдельные слова
+  const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+  
+  // Ищем товары, которые соответствуют всем словам запроса
+  const filteredItems = state.items.filter(item => {
+    // Создаем строку для поиска из всех релевантных полей товара
+    const searchString = `
+      ${item.name.toLowerCase()}
+      ${item.price}
+      ${item.size ? item.size.toLowerCase() : ''}
+      ${item.description ? item.description.toLowerCase() : ''}
+    `;
+    
+    // Проверяем, содержит ли строка все слова запроса
+    return searchWords.every(word => searchString.includes(word));
+  });
 
+  // Отображаем результаты
   if (filteredItems.length === 0) {
     elements.itemsContainer.innerHTML = `
       <div class="no-results">
@@ -384,11 +398,13 @@ function searchItems() {
         <button class="retry-btn">Показать все товары</button>
       </div>
     `;
-    document.querySelector('.retry-btn').addEventListener('click', renderItems);
-    return;
+    document.querySelector('.retry-btn').addEventListener('click', () => {
+      elements.searchInput.value = '';
+      renderItems();
+    });
+  } else {
+    renderItems(filteredItems);
   }
-
-  renderItems(filteredItems);
 }
 
 function showLoading(show) {
