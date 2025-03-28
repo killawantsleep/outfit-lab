@@ -6,6 +6,8 @@ const CONFIG = {
   TIMEOUT: 10000
 };
 
+let searchTimeout = null;
+
 // Инициализация WebApp
 function initTelegramWebApp() {
   console.log("Инициализация WebApp...");
@@ -285,7 +287,6 @@ async function submitOrder(subtotal) {
   console.log("Отправка заказа:", orderData);
 
   try {
-    // Основной способ
     if (typeof window.Telegram.WebApp.sendData === 'function') {
       window.Telegram.WebApp.sendData(JSON.stringify(orderData));
       console.log("Данные отправлены через WebApp");
@@ -293,10 +294,8 @@ async function submitOrder(subtotal) {
       throw new Error("WebApp.sendData не доступен");
     }
 
-    // Резервный способ
     await sendOrderFallback(orderData);
     
-    // Очистка
     state.cart = [];
     updateCart();
     closeModal();
@@ -319,7 +318,6 @@ async function submitOrder(subtotal) {
 async function sendOrderFallback(orderData) {
   console.log("Попытка резервной отправки...");
   try {
-    // Отправка через Bot API
     const response = await fetch(`https://api.telegram.org/bot${CONFIG.BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -336,7 +334,6 @@ async function sendOrderFallback(orderData) {
   } catch (e) {
     console.error("Ошибка fallback:", e);
     
-    // Последний способ - через Google Script
     try {
       const scriptResponse = await fetch(CONFIG.SCRIPT_URL, {
         method: 'POST',
@@ -365,46 +362,43 @@ function closeModal() {
 }
 
 function searchItems() {
-  const searchTerm = elements.searchInput.value.trim().toLowerCase();
-  
-  // Если строка поиска пустая, показываем все товары
-  if (!searchTerm) {
-    renderItems();
-    return;
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
   }
-
-  // Разбиваем поисковый запрос на отдельные слова
-  const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
   
-  // Ищем товары, которые соответствуют всем словам запроса
-  const filteredItems = state.items.filter(item => {
-    // Создаем строку для поиска из всех релевантных полей товара
-    const searchString = `
-      ${item.name.toLowerCase()}
-      ${item.price}
-      ${item.size ? item.size.toLowerCase() : ''}
-      ${item.description ? item.description.toLowerCase() : ''}
-    `;
+  searchTimeout = setTimeout(() => {
+    const searchTerm = elements.searchInput.value.trim().toLowerCase();
     
-    // Проверяем, содержит ли строка все слова запроса
-    return searchWords.every(word => searchString.includes(word));
-  });
-
-  // Отображаем результаты
-  if (filteredItems.length === 0) {
-    elements.itemsContainer.innerHTML = `
-      <div class="no-results">
-        <p>Товары по запросу "${searchTerm}" не найдены</p>
-        <button class="retry-btn">Показать все товары</button>
-      </div>
-    `;
-    document.querySelector('.retry-btn').addEventListener('click', () => {
-      elements.searchInput.value = '';
+    if (!searchTerm) {
       renderItems();
+      return;
+    }
+
+    const filteredItems = state.items.filter(item => {
+      const itemFields = [
+        item.name.toLowerCase(),
+        String(item.price),
+        item.size ? item.size.toLowerCase() : ''
+      ].join(' ');
+      
+      return itemFields.includes(searchTerm);
     });
-  } else {
-    renderItems(filteredItems);
-  }
+
+    if (filteredItems.length === 0) {
+      elements.itemsContainer.innerHTML = `
+        <div class="no-results">
+          <p>Товары по запросу "${searchTerm}" не найдены</p>
+          <button class="retry-btn">Показать все товары</button>
+        </div>
+      `;
+      document.querySelector('.retry-btn').addEventListener('click', () => {
+        elements.searchInput.value = '';
+        renderItems();
+      });
+    } else {
+      renderItems(filteredItems);
+    }
+  }, 300);
 }
 
 function showLoading(show) {
@@ -439,6 +433,7 @@ function setupEventListeners() {
   });
   
   elements.searchBtn.addEventListener('click', searchItems);
+  elements.searchInput.addEventListener('input', searchItems);
   elements.searchInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') searchItems();
   });

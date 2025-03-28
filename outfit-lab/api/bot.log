@@ -228,3 +228,69 @@ ValueError: ❌ Требуется фото товара
 2025-03-28 01:28:42,461 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788811&timeout=20 HTTP/1.1" 200 23
 2025-03-28 01:29:02,535 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788811&timeout=20 HTTP/1.1" 200 23
 2025-03-28 01:29:22,608 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788811&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:54:57,974 - INFO - Бот инициализирован
+2025-03-28 13:54:57,974 - INFO - === Бот запущен ===
+2025-03-28 13:54:57,982 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 13:54:58,275 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getMe HTTP/1.1" 200 252
+2025-03-28 13:54:58,279 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 13:54:58,506 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=1&timeout=20 HTTP/1.1" 200 354
+2025-03-28 13:54:58,511 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 13:54:58,804 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+295%7D HTTP/1.1" 200 1116
+2025-03-28 13:54:58,806 - INFO - Админ начал добавление товара
+2025-03-28 13:55:18,582 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788812&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:55:38,653 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788812&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:55:50,357 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788812&timeout=20 HTTP/1.1" 200 1147
+2025-03-28 13:55:50,358 - ERROR - Ошибка добавления: Неверный формат. Нужно: Название | Цена | Размер
+2025-03-28 13:55:50,451 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%E2%9D%8C+%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%3A+%D0%9D%D0%B5%D0%B2%D0%B5%D1%80%D0%BD%D1%8B%D0%B9+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82.+%D0%9D%D1%83%D0%B6%D0%BD%D0%BE%3A+%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80&reply_parameters=%7B%22message_id%22%3A+299%7D HTTP/1.1" 200 1631
+2025-03-28 13:56:03,081 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788813&timeout=20 HTTP/1.1" 200 354
+2025-03-28 13:56:07,216 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788814&timeout=20 HTTP/1.1" 200 354
+2025-03-28 13:56:07,221 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 13:56:07,565 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+302%7D HTTP/1.1" 200 1116
+2025-03-28 13:56:07,566 - INFO - Админ начал добавление товара
+2025-03-28 13:56:19,150 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788815&timeout=20 HTTP/1.1" 200 1045
+2025-03-28 13:56:19,259 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getFile?file_id=AgACAgIAAxkBAAIBK2fmgDZ1JaD3XxOYjp1qDun82OLtAAK86TEbAuAwS_BFwpodfDKTAQADAgADeQADNgQ HTTP/1.1" 200 206
+2025-03-28 13:56:19,262 - DEBUG - Starting new HTTPS connection (1): script.google.com:443
+2025-03-28 13:56:21,042 - DEBUG - https://script.google.com:443 "POST /macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec HTTP/1.1" 302 None
+2025-03-28 13:56:21,046 - DEBUG - Starting new HTTPS connection (1): script.googleusercontent.com:443
+2025-03-28 13:56:21,440 - DEBUG - https://script.googleusercontent.com:443 "GET /macros/echo?user_content_key=AehSKLgiI3gMvmlNUqj4xf_GDxwtO-Riq28k8ceesPxGUnpeZ9_hNdDz0cLY-CcuLGsD72Kds422bVYWjMbVQxE0nJFXadyd0pIdnTduEGlbGeLNlbK4FwvlSdq5iZ-EbnzuCpzuEwCaXuvcdThWE1Xikeh-xLxi02XWGYyQDGHMVjtcst5eMiqUXVSgVV_4BEmIkx5VA2LnjW-Jv0ltxrqVwjfhadTtcnpInoCcSiG1is4ABCqRd8TV4cl8W4Y9rmctk6Q6VF9qyaZgkOvesEm7ybKnCo9HgcIdY2_F9FIf&lib=MT3W8i3q4F6IScp1PzrPF9Qv2pg-rRWl1 HTTP/1.1" 200 None
+2025-03-28 13:56:21,552 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=5000931101&text=%E2%9C%85+%D0%A2%D0%BE%D0%B2%D0%B0%D1%80+%D0%B4%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%21%0A%0A%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%3A+%3Cb%3E%D0%BD%D0%B0%D0%B9%D0%BA%3C%2Fb%3E%0A%D0%A6%D0%B5%D0%BD%D0%B0%3A+%3Cb%3E12000.0+%E2%82%BD%3C%2Fb%3E%0A%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%80%3A+%3Cb%3E42%3C%2Fb%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+304%7D HTTP/1.1" 200 1630
+2025-03-28 13:56:21,553 - INFO - Добавлен товар: найк
+2025-03-28 13:56:39,227 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:56:59,299 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:57:19,367 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:57:39,439 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:57:59,509 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:58:19,582 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:58:39,652 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:58:59,722 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:59:19,793 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:59:39,886 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 13:59:59,958 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:00:20,053 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:00:40,124 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:01:00,196 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:01:20,268 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:01:40,348 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:02:00,419 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:02:20,492 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:02:40,562 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:03:00,640 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:03:20,717 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:03:40,790 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:04:00,861 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:04:20,982 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:04:41,052 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:05:01,131 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:05:01,134 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-28 14:05:21,401 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:05:41,476 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:06:01,555 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:06:21,633 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:06:41,736 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:07:01,812 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:07:21,891 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:07:41,968 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:08:02,045 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:08:22,130 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15788816&timeout=20 HTTP/1.1" 200 23
+2025-03-28 14:08:25,141 - ERROR - Infinity polling: polling exited
+2025-03-28 14:08:25,141 - ERROR - Break infinity polling
