@@ -374,14 +374,16 @@ function searchItems() {
       return;
     }
 
+    const searchWords = searchTerm.split(/\s+/).filter(word => word.length > 0);
+    
     const filteredItems = state.items.filter(item => {
-      const itemFields = [
-        item.name.toLowerCase(),
-        String(item.price),
-        item.size ? item.size.toLowerCase() : ''
-      ].join(' ');
+      const searchString = `
+        ${item.name.toLowerCase()}
+        ${item.price}
+        ${item.size ? item.size.toLowerCase() : ''}
+      `;
       
-      return itemFields.includes(searchTerm);
+      return searchWords.some(word => searchString.includes(word));
     });
 
     if (filteredItems.length === 0) {
