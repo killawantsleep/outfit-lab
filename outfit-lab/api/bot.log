@@ -7492,3 +7492,142 @@ telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsucc
 2025-03-29 19:47:38,074 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789098&timeout=20 HTTP/1.1" 200 23
 2025-03-29 19:47:56,126 - ERROR - Infinity polling: polling exited
 2025-03-29 19:47:56,127 - ERROR - Break infinity polling
+2025-03-29 19:48:15,063 - INFO - Бот инициализирован
+2025-03-29 19:48:15,064 - INFO - === Бот запущен ===
+2025-03-29 19:48:15,067 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-29 19:48:15,333 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getMe HTTP/1.1" 200 252
+2025-03-29 19:48:15,336 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-29 19:48:30,293 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=1&timeout=20 HTTP/1.1" 200 498
+2025-03-29 19:48:30,297 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-29 19:48:30,534 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=1931968348&text=%F0%9F%93%A4+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0+%D1%81+%D0%BF%D0%BE%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E+%D0%B2+%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B5%3A%0A%3Ccode%3E%D0%9D%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%7C+%D0%A6%D0%B5%D0%BD%D0%B0+%7C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%801%2C+%D0%A0%D0%B0%D0%B7%D0%BC%D0%B5%D1%802%2C+...%3C%2Fcode%3E%0A%0A%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80%3A+%3Ccode%3E%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB%D0%BA%D0%B0+Oversize+%7C+1990+%7C+XS%2C+S%2C+M%2C+L%2C+XL%3C%2Fcode%3E&parse_mode=HTML&reply_parameters=%7B%22message_id%22%3A+697%7D HTTP/1.1" 200 1390
+2025-03-29 19:48:30,535 - INFO - Админ начал добавление товара
+2025-03-29 19:48:50,368 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789099&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:49:10,442 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789099&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:49:14,776 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789099&timeout=20 HTTP/1.1" 200 498
+2025-03-29 19:49:14,778 - ERROR - Ошибка добавления: Отправьте фото товара
+2025-03-29 19:49:14,781 - DEBUG - Starting new HTTPS connection (1): api.telegram.org:443
+2025-03-29 19:49:15,099 - DEBUG - https://api.telegram.org:443 "POST /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/sendMessage?chat_id=1931968348&text=%E2%9D%8C+%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0%3A+%D0%9E%D1%82%D0%BF%D1%80%D0%B0%D0%B2%D1%8C%D1%82%D0%B5+%D1%84%D0%BE%D1%82%D0%BE+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D0%B0&reply_parameters=%7B%22message_id%22%3A+699%7D HTTP/1.1" 200 937
+2025-03-29 19:49:15,824 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 409 143
+2025-03-29 19:49:15,832 - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-03-29 19:49:15,835 - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 1234, in __threaded_polling
+    polling_thread.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 688, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+                               allowed_updates=allowed_updates,
+                               timeout=timeout, long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 660, in get_updates
+    json_updates = apihelper.get_updates(
+        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
+        long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 332, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+2025-03-29 19:49:36,163 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:49:56,234 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:50:16,306 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:50:19,250 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 409 143
+2025-03-29 19:50:19,253 - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-03-29 19:50:19,256 - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 1234, in __threaded_polling
+    polling_thread.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 688, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+                               allowed_updates=allowed_updates,
+                               timeout=timeout, long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 660, in get_updates
+    json_updates = apihelper.get_updates(
+        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
+        long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 332, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+2025-03-29 19:50:39,585 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:50:59,661 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:51:19,738 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:51:22,674 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 409 143
+2025-03-29 19:51:22,676 - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-03-29 19:51:22,679 - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 1234, in __threaded_polling
+    polling_thread.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 688, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+                               allowed_updates=allowed_updates,
+                               timeout=timeout, long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 660, in get_updates
+    json_updates = apihelper.get_updates(
+        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
+        long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 332, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+2025-03-29 19:51:43,006 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:52:03,077 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:52:23,148 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:52:26,096 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 409 143
+2025-03-29 19:52:26,099 - ERROR - Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2025-03-29 19:52:26,102 - ERROR - Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 1234, in __threaded_polling
+    polling_thread.raise_exceptions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 111, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\util.py", line 93, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 688, in __retrieve_updates
+    updates = self.get_updates(offset=(self.last_update_id + 1),
+                               allowed_updates=allowed_updates,
+                               timeout=timeout, long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\__init__.py", line 660, in get_updates
+    json_updates = apihelper.get_updates(
+        self.token, offset=offset, limit=limit, timeout=timeout, allowed_updates=allowed_updates,
+        long_polling_timeout=long_polling_timeout)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 332, in get_updates
+    return _make_request(token, method_url, params=payload)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 168, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\ПК\AppData\Local\Programs\Python\Python313\Lib\site-packages\telebot\apihelper.py", line 195, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+
+2025-03-29 19:52:46,429 - DEBUG - https://api.telegram.org:443 "GET /bot7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA/getUpdates?offset=15789100&timeout=20 HTTP/1.1" 200 23
+2025-03-29 19:52:52,432 - ERROR - Infinity polling: polling exited
+2025-03-29 19:52:52,433 - ERROR - Break infinity polling
