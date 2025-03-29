@@ -1,17 +1,13 @@
-let CONFIG = {
+const CONFIG = {
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec',
   DELIVERY_COST: 440,
+  BOT_TOKEN: "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA",
+  ADMIN_ID: 5000931101,
   TIMEOUT: 10000
 };
 
-async function loadConfig() {
-  try {
-    const response = await fetch('/api/config');
-    const data = await response.json();
-    Object.assign(CONFIG, data);
-  } catch (e) {
-    console.error("Ошибка загрузки конфига:", e);
-  }
-}
+let searchTimeout = null;
+
 // Инициализация WebApp
 function initTelegramWebApp() {
   console.log("Инициализация WebApp...");
