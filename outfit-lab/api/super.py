@@ -7,7 +7,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # Конфигурация
 BOT_TOKEN = "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA"
-ADMIN_IDS = [5808931101, 1931968348]
+ADMIN_ID = 1931968348, 
 WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec"
 
@@ -27,7 +27,7 @@ logger.info("Бот инициализирован")
 
 def log_to_admin(text):
     try:
-        bot.send_message(ADMIN_IDS, text, parse_mode='HTML')
+        bot.send_message(ADMIN_ID, text, parse_mode='HTML')
     except Exception as e:
         logger.error(f"Ошибка отправки лога админу: {e}")
 
@@ -53,7 +53,7 @@ def start(message):
 @bot.message_handler(commands=['additem'])
 def add_item(message):
     try:
-        if message.from_user.id != ADMIN_IDS:
+        if message.from_user.id != ADMIN_ID:
             bot.reply_to(message, "❌ Только для администратора")
             return
 
@@ -189,7 +189,7 @@ def handle_web_app_data(message):
         # Отправка админу
         try:
             bot.send_message(
-                ADMIN_IDS,
+                ADMIN_ID,
                 order_msg,
                 parse_mode="HTML",
                 reply_markup=markup
