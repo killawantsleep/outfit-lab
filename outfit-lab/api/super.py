@@ -4,7 +4,10 @@ import json
 import logging
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
-
+from telegram import Bot
+from dotenv import load_dotenv
+import os
+load_dotenv()   
 # Конфигурация
 BOT_TOKEN = "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA"
 ADMIN_ID = 5000931101
