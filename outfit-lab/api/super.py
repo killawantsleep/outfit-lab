@@ -5,15 +5,19 @@ import logging
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from telegram import Bot
-from dotenv import load_dotenv
 import os
-load_dotenv()   
-# Конфигурация
-BOT_TOKEN = "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA"
-ADMIN_ID = 5000931101
-WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
-SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec"
+from dotenv import load_dotenv
+load_dotenv()
 
+# Конфигурация из .env
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
+SCRIPT_URL = os.getenv("SCRIPT_URL")
+WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# ... остальной код бота без изменений
 # Настройка логирования
 logging.basicConfig(
     level=logging.DEBUG,
