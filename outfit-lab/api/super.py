@@ -10,7 +10,7 @@ BOT_TOKEN = "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA"
 ADMIN_ID = 1931968348
 WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec"
-IMG_BB_API_KEY = "ваш_api_ключ_от_imgbb"  # Замените на свой ключ с imgbb.com
+IMG_BB_API_KEY = "a8b20a49f52e1576de0020abe1d678b6"  # Замените на свой ключ с imgbb.com
 
 # Настройка логирования
 logging.basicConfig(
