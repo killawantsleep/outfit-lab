@@ -7,9 +7,10 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # Конфигурация
 BOT_TOKEN = "7717029640:AAFObdE7Zb0HIRU961M--BaenWsy83DUMCA"
-ADMIN_ID = 1931968348 
+ADMIN_ID = 1931968348
 WEB_APP_URL = "https://killawantsleep.github.io/outfit-lab/"
 SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI9zOhivLi4RClLlDkl7xqOQEIlWLUOIldaVwGZzOFgcG50AwFBsyfDQ2W7twPRp59eA/exec"
+IMG_BB_API_KEY = "ваш_api_ключ_от_imgbb"  # Замените на свой ключ с imgbb.com
 
 # Настройка логирования
 logging.basicConfig(
@@ -30,6 +31,29 @@ def log_to_admin(text):
         bot.send_message(ADMIN_ID, text, parse_mode='HTML')
     except Exception as e:
         logger.error(f"Ошибка отправки лога админу: {e}")
+
+def upload_to_imgbb(file_id):
+    """Загружает фото на ImgBB и возвращает постоянную ссылку"""
+    try:
+        file_info = bot.get_file(file_id)
+        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+        photo_data = requests.get(file_url).content
+        
+        response = requests.post(
+            "https://api.imgbb.com/1/upload",
+            params={'key': IMG_BB_API_KEY},
+            files={'image': photo_data}
+        )
+        
+        if response.status_code == 200:
+            return response.json()['data']['url']
+        else:
+            logger.error(f"Ошибка ImgBB: {response.text}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Ошибка загрузки на ImgBB: {e}")
+        return None
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -85,16 +109,21 @@ def process_item(message):
         name, price = parts[:2]
         price = float(price.replace(',', '.').strip())
         
-        # Обработка размеров
         sizes = [size.strip() for size in parts[2].split(',') if size.strip()]
         if not sizes:
             raise ValueError("Укажите хотя бы один размер")
         
-        # Получаем URL фото
-        file_info = bot.get_file(message.photo[-1].file_id)
-        image_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+        # Загрузка фото на ImgBB
+        file_id = message.photo[-1].file_id
+        image_url = upload_to_imgbb(file_id)
+        
+        if not image_url:
+            # Если не удалось загрузить на ImgBB, используем временную ссылку Telegram
+            file_info = bot.get_file(file_id)
+            image_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+            log_to_admin(f"⚠️ Использована Telegram-ссылка для товара {name}")
 
-        # Отправляем в Google Sheets для каждого размера
+        # Отправка в Google Sheets
         for size in sizes:
             response = requests.post(
                 SCRIPT_URL,
@@ -103,7 +132,8 @@ def process_item(message):
                     'name': name,
                     'price': price,
                     'size': size,
-                    'image': image_url
+                    'image': image_url,
+                    'file_id': file_id  # Сохраняем на будущее
                 },
                 timeout=10
             )
@@ -111,7 +141,6 @@ def process_item(message):
             if response.status_code != 200:
                 raise ValueError(f"Ошибка Google Script для размера {size}: {response.text}")
 
-        # Успешное добавление
         sizes_text = ", ".join(f"<b>{size}</b>" for size in sizes)
         bot.reply_to(
             message,
@@ -130,7 +159,6 @@ def process_item(message):
         logger.critical(f"Критическая ошибка: {e}", exc_info=True)
         bot.reply_to(message, "❌ Произошла системная ошибка")
 
-# Остальные функции остаются без изменений
 @bot.message_handler(content_types=['web_app_data'])
 def handle_web_app_data(message):
     try:
@@ -155,7 +183,6 @@ def handle_web_app_data(message):
             logger.warning(f"Неизвестное действие: {data.get('action')}")
             return
 
-        # Формирование сообщения
         items_text = "\n".join(
             f"• {item.get('name', 'Без названия')} - {item.get('price', 0)} ₽"
             f" ({item.get('size', 'без размера')})"
@@ -179,14 +206,12 @@ def handle_web_app_data(message):
         💰 <b>Итого:</b> {data.get('total', 0)} ₽
         """
 
-        # Кнопки для связи
         markup = InlineKeyboardMarkup()
         markup.row(
             InlineKeyboardButton("📞 Позвонить", url=f"tel:{data['user'].get('phone', '')}"),
             InlineKeyboardButton("💬 Написать", url=f"https://t.me/{data['user'].get('telegram', '')}")
         )
 
-        # Отправка админу
         try:
             bot.send_message(
                 ADMIN_ID,
@@ -197,15 +222,12 @@ def handle_web_app_data(message):
             logger.info("Уведомление отправлено админу")
         except Exception as e:
             logger.error(f"Ошибка отправки админу: {e}")
-            
-            # Резервная отправка через Google Script
             requests.post(SCRIPT_URL, json={
                 'action': 'forward_order',
                 'order': data,
                 'error': str(e)
             })
 
-        # Подтверждение пользователю
         bot.send_message(
             message.chat.id,
             "✅ <b>Заказ оформлен!</b>\n"
@@ -237,4 +259,4 @@ if __name__ == '__main__':
         bot.infinity_polling()
     except Exception as e:
         logger.critical(f"Бот упал: {e}", exc_info=True)
-        log_to_admin(f"🛑 Бот остановлен:\n<code>{e}</code>") 
+        log_to_admin(f"🛑 Бот остановлен:\n<code>{e}</code>")
